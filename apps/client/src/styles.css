@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Schoolbell&display=swap');
+@import "tailwindcss";
+
+body {
+  @apply m-0;
+  font-family: "Schoolbell", cursive;
+  font-weight: 400;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.schoolbell {
+  font-family: "Schoolbell", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
