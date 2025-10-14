@@ -9,7 +9,6 @@ function App() {
 	const navigate = useNavigate();
 
 	const handlePlayClick = () => {
-		// Logic to join a game will go here
 		if (playerName.trim()) {
 			navigate({ to: "/game" });
 		} else {
