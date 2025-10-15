@@ -1,0 +1,18 @@
+{
+	"files.exclude": {
+		"**/.turbo": true,
+		"**/node_modules": true,
+		"**/.vscode": true,
+		"**/.git": true,
+		"**/.gitignore": true,
+		"**/.cta.json": true,
+		"**/biome.json": true,
+		"**/tsconfig.json": true,
+		"**/vite.config.ts": true,
+		// "**/package.json": true,
+		"**/README.md": true,
+		"**/index.html": true,
+		"**/.npmrc": true
+	},
+
+}
