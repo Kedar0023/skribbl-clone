@@ -1,18 +1,9 @@
+import useGameStore from "@/store/gameStore";
 import { useEffect, useState } from "react";
 
-interface NavbarProps {
-	round: number;
-	totalRounds: number;
-	wordToGuess: string;
-	timeInSec: number;
-}
 //---------------------------------------------------------------------------------------
-const Navbar = ({
-	round,
-	totalRounds,
-	wordToGuess,
-	timeInSec,
-}:NavbarProps) => {
+const Navbar = () => {
+	const {round , totalRounds,wordToGuess,timeInSec} = useGameStore();
 	//---------------------------------------------------------------------------------------
 
 	const [countdown, setCountdown] = useState<number>(timeInSec);
@@ -38,7 +29,6 @@ const Navbar = ({
 
 		const initialRevealCount = wordArr.length > 3 ? 2 : 1;
 		const indices = wordArr.map((_, idx) => idx);
-		console.log(indices);
 
 		// Randomly reveal some letters initially
 		for (let i = 0; i < initialRevealCount; i++) {

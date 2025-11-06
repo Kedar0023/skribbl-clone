@@ -1,3 +1,4 @@
+import Canvas from "@/components/Canvas";
 import ChatBox from "@/components/chatBox";
 import MainCanvas from "@/components/MainCanvas";
 import Navbar from "@/components/Navbar";
@@ -50,7 +51,8 @@ function RouteComponent() {
 			/>
 			<div className="flex flex-grow overflow-hidden">
 				<Players players={players} currentDrawerId={"001"} />
-				<MainCanvas canvasRef={canvasRef} isDrawing={true} />
+				{/* <MainCanvas canvasRef={canvasRef} isDrawing={true} /> */}
+				<Canvas/>
 				<ChatBox
 					chatMessages={chatMessages}
 					guessInput={""}

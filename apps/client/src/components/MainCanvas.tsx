@@ -1,5 +1,7 @@
-import { Eraser, Paintbrush2Icon, Pen, Trash2, UndoIcon } from "lucide-react";
-import React, {  useState, useEffect } from "react";
+import socket from "@/socket";
+import useGameStore from "@/store/gameStore";
+import { Eraser, Pen, Trash2, UndoIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import type { RefObject } from "react";
 
 interface MainCanvasProps {
@@ -31,10 +33,11 @@ const DEFAULT_COLOR = colors[0];
 const DEFAULT_WIDTH = 4;
 
 const MainCanvas: React.FC<MainCanvasProps> = ({ canvasRef, isDrawing }) => {
+	const { strokes, addStroke, undoStroke, clearCanvas } = useGameStore();
+
 	const [canvasColor, setcanvasColor] = useState<string>("#285e61");
 	const [tool, setTool] = useState<Tool>("pen");
 	const [color, setColor] = useState<string>(DEFAULT_COLOR);
-	const [strokes, setStrokes] = useState<Stroke[]>([]);
 	const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
 
 	// Drawing handlers
@@ -63,7 +66,11 @@ const MainCanvas: React.FC<MainCanvasProps> = ({ canvasRef, isDrawing }) => {
 
 	const handlePointerUp = () => {
 		if (!isDrawing || !currentStroke) return;
-		setStrokes((prev) => [...prev, currentStroke]);
+		// setStrokes((prev) => [...prev, currentStroke]);
+		addStroke(currentStroke);
+		console.log(currentStroke);
+		// emit the finished stroke to the server (only once, when stroke completes)
+		if (currentStroke) socket.emit("draw-stroke", currentStroke);
 		setCurrentStroke(null);
 	};
 
@@ -106,12 +113,38 @@ const MainCanvas: React.FC<MainCanvasProps> = ({ canvasRef, isDrawing }) => {
 	}, [canvasRef]);
 
 	// Tool actions
-	const handleUndo = () => {
-		setStrokes((prev) => prev.slice(0, -1));
-	};
-	const handleClear = () => {
-		setStrokes([]);
-	};
+	// const handleUndo = () => {
+	// 	undoStroke(strokes);
+	// };
+	// const handleClear = () => {
+	// 	setStrokes([]);
+	// };
+
+	// Listen for strokes broadcast from the server (other users)
+	useEffect(() => {
+		console.log(strokes);
+		const onDrawStroke = (stroke: Stroke) => {
+			if (!stroke) return;
+			// add stroke received from other clients
+			addStroke(stroke);
+		};
+
+		socket.on("draw-stroke", onDrawStroke);
+
+		// debug/connect events (optional)
+		socket.on("connect", () => {
+			console.debug("socket connected", socket.id);
+		});
+		socket.on("connect_error", (err) => {
+			console.error("socket connect error", err);
+		});
+
+		return () => {
+			socket.off("draw-stroke", onDrawStroke);
+			socket.off("connect");
+			socket.off("connect_error");
+		};
+	}, [addStroke]);
 
 	return (
 		<main className="flex-grow flex flex-col relative">
@@ -146,14 +179,15 @@ const MainCanvas: React.FC<MainCanvasProps> = ({ canvasRef, isDrawing }) => {
 					</button>
 					<button
 						className="p-2 text-xl hover:bg-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-						onClick={handleUndo}
+						onClick={() => undoStroke()}
+						disabled={strokes.length === 0}
 						title="Undo"
 					>
 						<UndoIcon />
 					</button>
 					<button
 						className="p-2 text-xl hover:bg-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-						onClick={handleClear}
+						onClick={() => clearCanvas()}
 						title="Clear"
 					>
 						<Trash2 />

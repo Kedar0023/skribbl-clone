@@ -19,17 +19,20 @@
     "@tanstack/router-plugin": "^1.132.0",
     "lucide-react": "^0.545.0",
     "react": "^19.0.0",
+    "react-canvas-draw": "^1.2.1",
     "react-dom": "^19.0.0",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "^4.0.6"
+    "tailwindcss": "^4.0.6",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@repo/types": "workspace:*",
     "@biomejs/biome": "2.2.4",
+    "@repo/types": "workspace:*",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.8",
+    "@types/react-canvas-draw": "^1.2.4",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^5.0.4",
     "jsdom": "^27.0.0",

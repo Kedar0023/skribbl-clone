@@ -7,6 +7,7 @@ import type {
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
+	Stroke,
 } from "@repo/types/socket";
 
 const app = express();
@@ -26,21 +27,22 @@ const io = new Server<
 const users:string[] = [];
 const messages:string[] = [];
 
+const strokes:Stroke[] = [];
+
 
 
 io.on("connection",(socket)=>{
     console.log("a user connected");
 	users.push(socket.id)
 
+	socket.on("draw-stroke",(stroke:Stroke)=>{
+		strokes.push(stroke);
+		socket.broadcast.emit("draw-stroke", stroke);
+	})
+
     socket.on("disconnect",()=>{
         console.log("user disconnected");
     })
-	socket.on("chat",(msg)=>{
-		messages.push(msg);
-		io.emit("chat-msg",msg);
-	})
-
-	io.emit("all_users",users)
 })
 
 app.get("/", (req: Request, res: Response) => {

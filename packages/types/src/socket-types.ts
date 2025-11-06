@@ -1,14 +1,17 @@
+type Stroke = {
+	color: string;
+	width: number;
+	points: { x: number; y: number }[];
+	tool: "pen" | "eraser";
+};
 interface ServerToClientEvents {
-	noArg: () => void;
-	basicEmit: (a: number, b: string, c: Buffer) => void;
-	withAck: (d: string, callback: (e: number) => void) => void;
 	all_users: (users: string[]) => void;
-	'chat-msg': (msg: string) => void;
+	"chat-msg": (msg: string) => void;
+	"draw-stroke": (stroke: Stroke) => void;
 }
 
 interface ClientToServerEvents {
-	hello: () => void;
-	chat: (msg: string) => void;
+	"draw-stroke": (stroke: Stroke) => void;
 }
 
 interface InterServerEvents {
@@ -19,4 +22,10 @@ interface SocketData {
 	name: string;
 	age: number;
 }
-export type{ ServerToClientEvents, ClientToServerEvents, InterServerEvents, SocketData };
+export type {
+	ServerToClientEvents,
+	ClientToServerEvents,
+	InterServerEvents,
+	SocketData,
+	Stroke
+};

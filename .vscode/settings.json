@@ -12,7 +12,8 @@
 		// "**/package.json": true,
 		"**/README.md": true,
 		"**/index.html": true,
-		"**/.npmrc": true
-	},
-
+		"**/.npmrc": true,
+		"**/apps/client/src/routeTree.gen.ts": true,
+		"**/apps/client/src/reportWebVitals.ts": true
+	}
 }
