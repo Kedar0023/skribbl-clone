@@ -1,31 +1,54 @@
-type Stroke = {
+export type User = {
+	id: string;
+	name: string;
+	score: number;
+};
+
+export type Stroke = {
 	color: string;
 	width: number;
 	points: { x: number; y: number }[];
 	tool: "pen" | "eraser";
 };
-interface ServerToClientEvents {
-	all_users: (users: string[]) => void;
+
+export enum GameState {
+	LOBBY = "LOBBY",
+	STARTING = "STARTING",
+	CHOOSING = "CHOOSING",
+	DRAWING = "DRAWING",
+	ROUND_END = "ROUND_END",
+	GAME_END = "GAME_END",
+}
+
+export interface ServerToClientEvents {
+	"room-joined": (roomId: string, users: User[]) => void;
+	"room-error": (msg: string) => void;
+	"user-joined": (user: User) => void;
+	"user-left": (userId: string) => void;
 	"chat-msg": (msg: string) => void;
 	"draw-stroke": (stroke: Stroke) => void;
+	"game-state-change": (state: GameState) => void;
+	"timer-tick": (time: number) => void;
+	"your-turn-to-choose": (words: string[]) => void;
+	"word-selected": (length: number) => void;
+	"correct-guess": (userId: string) => void
 }
 
-interface ClientToServerEvents {
+export interface ClientToServerEvents {
+	"create-room": (username: string, callback: (roomId: string) => void) => void;
+	"join-room": (roomId: string, username: string) => void;
 	"draw-stroke": (stroke: Stroke) => void;
+	"start-game": () => void;
+	"select-word": (word: string) => void;
+	"send-chat": (msg: string) => void
 }
 
-interface InterServerEvents {
+export interface InterServerEvents {
 	ping: () => void;
 }
 
-interface SocketData {
+export interface SocketData {
 	name: string;
-	age: number;
+	roomId: string;
 }
-export type {
-	ServerToClientEvents,
-	ClientToServerEvents,
-	InterServerEvents,
-	SocketData,
-	Stroke
-};
+

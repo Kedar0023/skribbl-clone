@@ -1,10 +1,8 @@
 import Canvas from "@/components/Canvas";
 import ChatBox from "@/components/chatBox";
-import MainCanvas from "@/components/MainCanvas";
 import Navbar from "@/components/Navbar";
 import Players from "@/components/Players";
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef } from "react";
 
 export const Route = createFileRoute("/game")({
 	component: RouteComponent,
@@ -39,7 +37,7 @@ function RouteComponent() {
 	];
 
 	const doNothing = () => {};
-	const canvasRef = useRef<HTMLCanvasElement>(null);
+	// const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	return (
 		<div className="flex flex-col h-screen w-screen bg-gray-900 text-white  overflow-hidden">
@@ -49,7 +47,7 @@ function RouteComponent() {
 				wordToGuess={"One Piece"}
 				timeInSec={120}
 			/>
-			<div className="flex flex-grow overflow-hidden">
+			<div className="flex grow overflow-hidden">
 				<Players players={players} currentDrawerId={"001"} />
 				{/* <MainCanvas canvasRef={canvasRef} isDrawing={true} /> */}
 				<Canvas/>

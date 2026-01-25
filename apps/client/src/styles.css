@@ -30,3 +30,11 @@ input[type="color"]::-webkit-color-swatch {
   border: none;
   border-radius: 50%;
 }
+
+@layer utilities {
+  .center-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

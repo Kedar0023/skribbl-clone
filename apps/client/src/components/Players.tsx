@@ -26,7 +26,7 @@ const Players = ({
 			<h3 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2">
 				Players
 			</h3>
-			<ul className="flex-grow space-y-2 overflow-y-auto custom-scrollbar">
+			<ul className="grow space-y-2 overflow-y-auto custom-scrollbar">
 				{players
 					.sort((a, b) => b.score - a.score)
 					.map((player) => (
