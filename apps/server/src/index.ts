@@ -7,7 +7,6 @@ import type {
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
-	Stroke,
 	User
 } from "@repo/types/socket";
 import { RoomManager } from "./RoomManager";
@@ -67,7 +66,7 @@ io.on("connection", (socket) => {
 
 			console.log(`User ${username} joined room ${roomId}`);
 
-			
+
 		} else {
 			socket.emit("room-error", "Room is full");
 		}

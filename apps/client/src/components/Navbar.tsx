@@ -2,17 +2,8 @@ import useGameStore from "@/store/gameStore";
 import { useEffect, useState } from "react";
 
 //---------------------------------------------------------------------------------------
-const Navbar = () => {
-	const {round , totalRounds,wordToGuess,timeInSec} = useGameStore();
+const Navbar = ({ round, totalRounds, wordToGuess, timeInSec }: { round: number, totalRounds: number, wordToGuess: string, timeInSec: number }) => {
 	//---------------------------------------------------------------------------------------
-
-	const [countdown, setCountdown] = useState<number>(timeInSec);
-	useEffect(() => {
-		const countdown = setInterval(() => {
-			setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-		}, 1000);
-		return () => clearInterval(countdown);
-	}, []);
 
 	const convertTimeIntoMinSec = (time: number) => {
 		const min = Math.floor(time / 60);
@@ -82,7 +73,7 @@ const Navbar = () => {
 			<div className="flex items-center space-x-4">
                 <span className="text-gray-400">Time Left : </span>
 				<span className="text-3xl font-bold text-yellow-400">
-					{convertTimeIntoMinSec(countdown)}
+					{convertTimeIntoMinSec(timeInSec)}
 				</span>
 			</div>
 		</header>

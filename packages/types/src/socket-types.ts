@@ -30,7 +30,7 @@ export interface ServerToClientEvents {
 	"game-state-change": (state: GameState) => void;
 	"timer-tick": (time: number) => void;
 	"your-turn-to-choose": (words: string[]) => void;
-	"word-selected": (length: number) => void;
+	"word-selected": (word: string) => void;
 	"correct-guess": (userId: string) => void
 }
 

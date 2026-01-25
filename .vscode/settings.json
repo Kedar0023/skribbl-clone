@@ -2,7 +2,6 @@
 	"files.exclude": {
 		"**/.turbo": true,
 		"**/node_modules": true,
-		"**/.vscode": true,
 		"**/.git": true,
 		"**/.gitignore": true,
 		"**/.cta.json": true,
@@ -14,6 +13,43 @@
 		"**/index.html": true,
 		"**/.npmrc": true,
 		"**/apps/client/src/routeTree.gen.ts": true,
-		"**/apps/client/src/reportWebVitals.ts": true
-	}
+		"**/apps/client/src/reportWebVitals.ts": true,
+		"**/.tanstack": true,
+		"**/bun.lock": true,
+		"**/package.json": true
+	},
+
+	"files.watcherExclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"search.exclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"files.readonlyInclude": {
+		"**/routeTree.gen.ts": true
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  }
 }

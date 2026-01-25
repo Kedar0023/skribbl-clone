@@ -17,6 +17,7 @@ export class Room {
     timeLeft: number = 0;
     round: number = 1;
     totalRounds: number = 3;
+    //-----------------------------------------------------------------------
 
     // Server instance to emit events directly from room
     private io: Server;
@@ -104,7 +105,7 @@ export class Room {
         this.currentWord = word;
         this.broadcastState();
 
-        this.io.to(this.id).emit("word-selected", word.length);
+        this.io.to(this.id).emit("word-selected", word);
 
         // 60 seconds to draw
         this.startTimer(60, () => {
