@@ -145,6 +145,16 @@ function App() {
 				</div>
 
 				<div className="flex flex-col w-full gap-2">
+                    <button 
+                        onClick={() => {
+                            if(!playerName.trim()) return alert("Enter name!");
+                            useGameStore.getState().actions.joinQuickGame(playerName);
+                            // Navigation is handled by the useEffect watching `roomId`
+                        }}
+                        className="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-md text-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-colors duration-300"
+                    >
+						Join Quick Game
+					</button>
 					<button 
                         onClick={handleCreateRoomClick}
                         className="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-md text-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-colors duration-300"

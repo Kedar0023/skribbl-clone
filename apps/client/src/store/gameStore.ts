@@ -29,6 +29,8 @@ interface GameState {
         startGame: () => void;
         selectWord: (word: string) => void;
         sendChat: (msg: string) => void;
+        joinQuickGame: (name: string) => void;
+        drawStroke: (stroke: Stroke) => void;
     }
 }
 
@@ -72,6 +74,12 @@ const useGameStore = create<GameState>()((set, get) => ({
         },
         sendChat: (msg) => {
             socket.emit("send-chat", msg);
+        },
+        joinQuickGame: (name: string) => {
+            socket.emit("join-quick-game", name);
+        },
+        drawStroke: (stroke: Stroke) => {
+            socket.emit("draw-stroke", stroke);
         }
     }
 }));
@@ -113,6 +121,10 @@ socket.on("your-turn-to-choose", (words) => {
 socket.on("word-selected", (word) => {
     useGameStore.setState({ wordToGuess: word, availableWords: [], isDrawer: false });
 });
+
+socket.on("get-stroke",(stroke)=>{
+	useGameStore.getState().addStroke(stroke);
+})
 
 socket.on("chat-msg", (msgStr) => {
     // msgStr format: "Name: message"

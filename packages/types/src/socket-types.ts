@@ -26,7 +26,7 @@ export interface ServerToClientEvents {
 	"user-joined": (user: User) => void;
 	"user-left": (userId: string) => void;
 	"chat-msg": (msg: string) => void;
-	"draw-stroke": (stroke: Stroke) => void;
+	"get-stroke": (stroke: Stroke) => void;
 	"game-state-change": (state: GameState) => void;
 	"timer-tick": (time: number) => void;
 	"your-turn-to-choose": (words: string[]) => void;
@@ -40,7 +40,8 @@ export interface ClientToServerEvents {
 	"draw-stroke": (stroke: Stroke) => void;
 	"start-game": () => void;
 	"select-word": (word: string) => void;
-	"send-chat": (msg: string) => void
+	"send-chat": (msg: string) => void;
+    "join-quick-game": (username: string) => void;
 }
 
 export interface InterServerEvents {

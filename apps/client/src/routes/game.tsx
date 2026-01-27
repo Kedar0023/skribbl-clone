@@ -12,6 +12,7 @@ export const Route = createFileRoute("/game")({
 function RouteComponent() {
 	const { 
         users, 
+		strokes,
         currentUser, 
         chatMessages, 
         round, 
@@ -33,6 +34,7 @@ function RouteComponent() {
             setGuessInput("");
         }
     };
+    console.log(isDrawer);
 
 	return (
 		<div className="flex flex-col h-screen w-screen bg-gray-900 text-white  overflow-hidden">
@@ -78,6 +80,7 @@ function RouteComponent() {
 
 				    <Canvas/>
                 </div>
+                
                 
 				{!isDrawer && (
 					<ChatBox

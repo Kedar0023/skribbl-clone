@@ -44,32 +44,54 @@ io.on("connection", (socket) => {
 		console.log(`Room created: ${room.id} by ${username}`);
 	});
 
+    const joinRoomLogic = (roomId: string, username: string) => {
+        const room = roomManager.getRoom(roomId);
+        if (!room) {
+            socket.emit("room-error", "Room not found");
+            return;
+        }
+
+        const user: User = { id: socket.id, name: username, score: 0 };
+        if (room.addUser(user)) {
+            socket.data.roomId = roomId;
+            socket.data.name = username;
+            
+            socket.join(roomId);
+            
+            // Notify user they joined and send current users
+            socket.emit("room-joined", roomId, room.users);
+            
+            // Notify others
+            socket.to(roomId).emit("user-joined", user);
+            
+            console.log(`User ${username} joined room ${roomId}`);
+        } else {
+            socket.emit("room-error", "Room is full or game started");
+        }
+    };
+
+    socket.on("join-quick-game", (username) => {
+        const room = roomManager.findAvailableRoom();
+        if (room) {
+            joinRoomLogic(room.id, username);
+        } else {
+             // Create new room if none found
+            const newRoom = roomManager.createRoom();
+            const user: User = { id: socket.id, name: username, score: 0 };
+            newRoom.addUser(user);
+            
+            socket.data.roomId = newRoom.id;
+            socket.data.name = username;
+            
+            socket.join(newRoom.id);
+            socket.emit("room-joined", newRoom.id, newRoom.users); // Notify creator
+            
+            console.log(`Quick Join: Room created: ${newRoom.id} by ${username}`);
+        }
+    });
+
 	socket.on("join-room", (roomId, username) => {
-		const room = roomManager.getRoom(roomId);
-		if (!room) {
-			socket.emit("room-error", "Room not found");
-			return;
-		}
-
-		const user: User = { id: socket.id, name: username, score: 0 };
-		if (room.addUser(user)) {
-			socket.data.roomId = roomId;
-			socket.data.name = username;
-
-			socket.join(roomId);
-
-			// Notify user they joined and send current users
-			socket.emit("room-joined", roomId, room.users);
-
-			// Notify others
-			socket.to(roomId).emit("user-joined", user);
-
-			console.log(`User ${username} joined room ${roomId}`);
-
-
-		} else {
-			socket.emit("room-error", "Room is full");
-		}
+        joinRoomLogic(roomId, username);
 	});
 
 	socket.on("draw-stroke", (stroke) => {
@@ -77,7 +99,7 @@ io.on("connection", (socket) => {
 		if (roomId) {
 			const room = roomManager.getRoom(roomId);
 			if (room && room.currentDrawerId === socket.id) {
-				socket.to(roomId).emit("draw-stroke", stroke);
+				socket.to(roomId).emit("get-stroke", stroke);
 			}
 		}
 	});

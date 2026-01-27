@@ -33,6 +33,16 @@ export class RoomManager {
         this.rooms.delete(roomId);
     }
 
+    findAvailableRoom(): Room | undefined {
+        // Return first room that is in LOBBY state and not full
+        for (const room of this.rooms.values()) {
+            if (room.gameState === "LOBBY" && room.users.length < room.maxPlayers) {
+                return room;
+            }
+        }
+        return undefined;
+    }
+
     private generateRoomId(): string {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
     }
