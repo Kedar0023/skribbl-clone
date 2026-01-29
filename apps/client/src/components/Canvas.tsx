@@ -15,7 +15,7 @@ const Canvas = () => {
     // Track rendered strokes to avoid redraw
     const renderedStrokeCount = useRef(0);
     
-    const { strokes, actions: { drawStroke }, clearCanvas, undoStroke } = useGameStore();
+    	const { strokes, actions: { drawStroke }, clearCanvas, undoStroke, isDrawer } = useGameStore();
 
     // Helper to get coordinates
     const getCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -48,6 +48,7 @@ const Canvas = () => {
     };
 
 	const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!isDrawer) return;
 		const { x, y } = getCoords(e);
         currentPoints.current = [{ x, y }];
 		setIsDrawing(true);
@@ -60,7 +61,7 @@ const Canvas = () => {
 	};
 
 	const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-		if (!isDrawing) return;
+		if (!isDrawing || !isDrawer) return;
         
         const { x, y } = getCoords(e);
         currentPoints.current.push({ x, y });
@@ -78,7 +79,7 @@ const Canvas = () => {
 	};
 
 	const endDrawing = () => {
-		if (!isDrawing) return;
+		if (!isDrawing || !isDrawer) return;
 		setIsDrawing(false);
         
         const newStroke: Stroke = {
@@ -123,8 +124,7 @@ const Canvas = () => {
 
 	return (
 		<main className="flex flex-col relative items-center justify-center bg-gray-300 h-full">
-        {console.log(isDrawing)}
-            <div className="relative rounded-lg overflow-hidden cursor-pointer ">
+            <div className={`relative rounded-lg overflow-hidden ${isDrawer ? 'cursor-pointer' : 'cursor-default'}`}>
                 <canvas
                     style={{backgroundColor: "#ffffff"}}
                     ref={canvasRef}
@@ -139,45 +139,47 @@ const Canvas = () => {
                 />
             </div>
             
-			<div className="py-2 flex gap-4 items-center bg-gray-800 text-white
-			 absolute bottom-4 left-1/2 transform -translate-x-1/2 
-			 rounded-md shadow-lg z-10 px-4">
-				<input
-					type="color"
-					className="w-8 h-8 rounded-full border-none p-0 cursor-pointer"
-					value={color}
-					onChange={(e) => {
-						setColor(e.target.value);
-						setIsEraser(false);
-					}}
-				/>
-                
-                <input 
-                    type="range" 
-                    min="1" 
-                    max="20" 
-                    value={lineWidth} 
-                    onChange={(e) => setLineWidth(parseInt(e.target.value))}
-                    className="w-24 accent-sky-600"
-                />
+            {isDrawer && (
+                <div className="py-2 flex gap-4 items-center bg-gray-800 text-white
+                 absolute bottom-4 left-1/2 transform -translate-x-1/2 
+                 rounded-md shadow-lg z-10 px-4">
+                    <input
+                        type="color"
+                        className="w-8 h-8 rounded-full border-none p-0 cursor-pointer"
+                        value={color}
+                        onChange={(e) => {
+                            setColor(e.target.value);
+                            setIsEraser(false);
+                        }}
+                    />
+                    
+                    <input 
+                        type="range" 
+                        min="1" 
+                        max="20" 
+                        value={lineWidth} 
+                        onChange={(e) => setLineWidth(parseInt(e.target.value))}
+                        className="w-24 accent-sky-600"
+                    />
 
-				<button
-					onClick={() => setIsEraser(!isEraser)}
-					className={`px-3 py-1 rounded-md transition-colors ${
-                        isEraser ? "bg-blue-500" : "hover:bg-gray-700"
-                    }`}
-				>
-					{isEraser ? "Eraser" : "Draw"}
-				</button>
+                    <button
+                        onClick={() => setIsEraser(!isEraser)}
+                        className={`px-3 py-1 rounded-md transition-colors ${
+                            isEraser ? "bg-blue-500" : "hover:bg-gray-700"
+                        }`}
+                    >
+                        {isEraser ? "Eraser" : "Draw"}
+                    </button>
 
-				<button onClick={undoStroke} className="px-3 py-1 hover:bg-gray-700 rounded-md">
-					Undo
-				</button>
+                    <button onClick={undoStroke} className="px-3 py-1 hover:bg-gray-700 rounded-md">
+                        Undo
+                    </button>
 
-				<button onClick={handleClear} className="px-3 py-1 hover:red-700 text-red-400 rounded-md">
-					Clear
-				</button>
-			</div>
+                    <button onClick={handleClear} className="px-3 py-1 hover:red-700 text-red-400 rounded-md">
+                        Clear
+                    </button>
+                </div>
+            )}
 		</main>
 	);
 };

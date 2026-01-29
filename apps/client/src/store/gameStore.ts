@@ -108,6 +108,9 @@ socket.on("room-error", (msg) => {
 
 socket.on("game-state-change", (gameState) => {
     useGameStore.setState({ gameState });
+    if (gameState === GameStateEnum.CHOOSING || gameState === GameStateEnum.ROUND_END) {
+        useGameStore.setState({ isDrawer: false });
+    }
 });
 
 socket.on("timer-tick", (timeInSec) => {
@@ -119,7 +122,7 @@ socket.on("your-turn-to-choose", (words) => {
 });
 
 socket.on("word-selected", (word) => {
-    useGameStore.setState({ wordToGuess: word, availableWords: [], isDrawer: false });
+    useGameStore.setState({ wordToGuess: word, availableWords: [] });
 });
 
 socket.on("get-stroke",(stroke)=>{
@@ -150,6 +153,10 @@ socket.on("correct-guess", (userId) => {
             ]
         }));
     }
+});
+
+socket.on("round-sync", (round, totalRounds) => {
+    useGameStore.setState({ round, totalRounds });
 });
 
 export default useGameStore;

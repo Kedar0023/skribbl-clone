@@ -170,5 +170,6 @@ export class Room {
 
     private broadcastState() {
         this.io.to(this.id).emit("game-state-change", this.gameState);
+        this.io.to(this.id).emit("round-sync", this.round, this.totalRounds);
     }
 }

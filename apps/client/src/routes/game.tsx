@@ -82,15 +82,13 @@ function RouteComponent() {
                 </div>
                 
                 
-				{!isDrawer && (
-					<ChatBox
+                <ChatBox
 					chatMessages={chatMessages}
 					guessInput={guessInput}
 					setGuessInput={setGuessInput}
 					handleGuessSubmit={handleGuessSubmit}
 					isDrawing={isDrawer}
 				/>
-				)}
 			</div>
 		</div>
 	);

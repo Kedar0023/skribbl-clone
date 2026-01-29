@@ -31,7 +31,8 @@ export interface ServerToClientEvents {
 	"timer-tick": (time: number) => void;
 	"your-turn-to-choose": (words: string[]) => void;
 	"word-selected": (word: string) => void;
-	"correct-guess": (userId: string) => void
+	"correct-guess": (userId: string) => void;
+    "round-sync": (round: number, totalRounds: number) => void;
 }
 
 export interface ClientToServerEvents {
