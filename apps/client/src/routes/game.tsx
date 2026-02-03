@@ -4,46 +4,29 @@ import Navbar from "@/components/Navbar";
 import Players from "@/components/Players";
 import { createFileRoute } from "@tanstack/react-router";
 import useGameStore from "@/store/gameStore";
-import { useState } from "react";
+import Leaderboard from "@/components/Leaderboard";
+import { GameState } from "@repo/types/socket";
+
 export const Route = createFileRoute("/game")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { 
-        users, 
-		strokes,
-        currentUser, 
-        chatMessages, 
-        round, 
-        totalRounds, 
-        wordToGuess, 
-        timeInSec, 
+	const {
+        users,
+        currentUser,
         gameState,
         isDrawer,
         availableWords,
-        actions: { sendChat, selectWord, startGame }
+        actions: { selectWord, startGame }
     } = useGameStore();
     
-    const [guessInput, setGuessInput] = useState("");
 
-    const handleGuessSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if(guessInput.trim()) {
-            sendChat(guessInput);
-            setGuessInput("");
-        }
-    };
     console.log(isDrawer);
 
 	return (
 		<div className="flex flex-col h-screen w-screen bg-gray-900 text-white  overflow-hidden">
-			<Navbar
-				round={round}
-				totalRounds={totalRounds}
-				wordToGuess={wordToGuess}
-				timeInSec={timeInSec}
-			/>
+			<Navbar/>
 			<div className="flex grow overflow-hidden">
 				<Players players={users.map(u => ({...u, isSelf: u.id === currentUser?.id}))} currentDrawerId={"001"} />
 				
@@ -77,18 +60,12 @@ function RouteComponent() {
                             </div>
                         </div>
                     )}
-
 				    <Canvas/>
                 </div>
                 
                 
-                <ChatBox
-					chatMessages={chatMessages}
-					guessInput={guessInput}
-					setGuessInput={setGuessInput}
-					handleGuessSubmit={handleGuessSubmit}
-					isDrawing={isDrawer}
-				/>
+                <ChatBox />
+                {gameState === GameState.GAME_END && <Leaderboard/>}
 			</div>
 		</div>
 	);

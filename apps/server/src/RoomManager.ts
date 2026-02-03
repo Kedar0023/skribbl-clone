@@ -2,6 +2,7 @@ import { Room } from "./Room";
 import { Server } from "socket.io";
 
 export class RoomManager {
+    //  static instance ==>  ensuring only one manager exists.
     static instance: RoomManager;
     rooms: Map<string, Room> = new Map();
     io: Server;

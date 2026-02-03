@@ -153,13 +153,10 @@ io.on("connection", (socket) => {
 		}
 		console.log(`User disconnected: ${socket.id}`);
 	});
-});
 
-app.get("/", (req: Request, res: Response) => {
-	res.send("one piece !!!");
-});
-app.get("/app", (req: Request, res: Response) => {
-	res.send("socket io !!!");
+	socket.on("get-room-id",()=>{
+		return socket.data.roomId;
+	})
 });
 
 server.listen(5000, () => {

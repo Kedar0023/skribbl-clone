@@ -1,11 +1,7 @@
-import type { User } from "@repo/types/socket";
+import useGameStore from "@/store/gameStore";
 
-interface LeaderboardProps {
-    users: User[];
-    currentUser: User | null;
-}
-
-const Leaderboard = ({ users, currentUser }: LeaderboardProps) => {
+const Leaderboard = () => {
+    const {users ,currentUser} = useGameStore();
     const sortedUsers = [...users].sort((a, b) => b.score - a.score);
 
     return (

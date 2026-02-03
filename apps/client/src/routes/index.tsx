@@ -12,14 +12,8 @@ function App() {
 	const navigate = useNavigate();
     const { createRoom, joinRoom } = useGameStore((state) => state.actions);
 
-    // Effect to navigate when room is joined (detected via store update or callback)
-    // Actually, store update happens async. socket.on("room-joined") updates store.
-    // We can listen to store changes or just rely on callbacks.
-    // Let's use a useEffect to watch for roomId change?
-    // Or simpler: pass callbacks or handle navigation in the component after action.
-    
-    // Better: listen to store roomId
-    const roomId = useGameStore((state) => state.roomId);
+    // const roomId = useGameStore((state) => state.roomId); 
+    const {roomId} = useGameStore()
     
     // If we have a roomId, we should be in game. 
     // BUT this might trigger if we just have it in store.
@@ -44,14 +38,9 @@ function App() {
     }
 
 	const handlePlayClick = () => {
-        if (!playerName.trim()) {
-			alert("Please enter a name!");
-            return;
-		}
-        // Quick join -> Create room for now
-        createRoom(playerName, () => {
-             handleNavigation();
-        });
+        if(!playerName.trim()) return alert("Enter name!");
+        useGameStore.getState().actions.joinQuickGame(playerName);
+        // Navigation is handled by the useEffect watching `roomId`
 	};
 
 	const handleCreateRoomClick = () => {
@@ -90,14 +79,15 @@ function App() {
     }, [roomId, navigate]);
 
 	return (
-		<div className="flex flex-col items-center justify-center h-screen w-screen bg-teal-800 text-white p-4">
+		<div className="flex flex-col items-center justify-center
+         h-screen w-screen text-white p-4 bg-blue-950">
 			<h1
 				className="text-6xl md:text-8xl font-extrabold text-white mb-12 schoolbell"
 				style={{
-					textShadow: "4px 4px 0px rgba(0,0,0,0.2)",
+					textShadow: "4px 4px 0px rgba(0,0,0,0.5)",
 				}}
 			>
-				Skibble.io
+				NotSkribbl.io
 			</h1>
 
 			{/* Main Content Box */}
@@ -139,22 +129,12 @@ function App() {
 
 				{/* 'Or' Divider */}
 				<div className="flex items-center w-full">
-					<div className="flex-grow h-px bg-white/20"></div>
-					<span className="px-4 text-sm font-light text-white/50">OR</span>
-					<div className="flex-grow h-px bg-white/20"></div>
+					<div className="flex-grow h-px bg-white/80"></div>
+					<span className="px-4 text-sm font-light text-white">OR</span>
+					<div className="flex-grow h-px bg-white/80"></div>
 				</div>
 
 				<div className="flex flex-col w-full gap-2">
-                    <button 
-                        onClick={() => {
-                            if(!playerName.trim()) return alert("Enter name!");
-                            useGameStore.getState().actions.joinQuickGame(playerName);
-                            // Navigation is handled by the useEffect watching `roomId`
-                        }}
-                        className="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-md text-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-colors duration-300"
-                    >
-						Join Quick Game
-					</button>
 					<button 
                         onClick={handleCreateRoomClick}
                         className="w-full bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-md text-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-colors duration-300"
@@ -172,7 +152,7 @@ function App() {
 
 			{/* Footer text */}
 			<footer className="absolute bottom-4 text-center text-sm text-white">
-				<p>Made with ❤️ by Deapool69</p>
+				<p>Made with ❤️ by Kedar0023_</p>
 			</footer>
 		</div>
 	);

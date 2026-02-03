@@ -43,6 +43,8 @@ export interface ClientToServerEvents {
 	"select-word": (word: string) => void;
 	"send-chat": (msg: string) => void;
     "join-quick-game": (username: string) => void;
+	"get-room-id" :()=>string;
+
 }
 
 export interface InterServerEvents {

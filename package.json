@@ -11,10 +11,11 @@
     "dev:c": "turbo run dev --filter=client"
   },
   "devDependencies": {
+    "@types/bun": "latest",
+    "baseline-browser-mapping": "^2.9.19",
     "prettier": "^3.6.2",
     "turbo": "^2.5.8",
-    "typescript": "5.9.2",
-    "@types/bun": "latest"
+    "typescript": "5.9.2"
   },
   "engines": {
     "node": ">=18"

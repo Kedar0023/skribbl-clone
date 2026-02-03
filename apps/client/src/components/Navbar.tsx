@@ -1,9 +1,8 @@
 import useGameStore from "@/store/gameStore";
 import { useEffect, useState } from "react";
 
-//---------------------------------------------------------------------------------------
-const Navbar = ({ round, totalRounds, wordToGuess, timeInSec }: { round: number, totalRounds: number, wordToGuess: string, timeInSec: number }) => {
-	//---------------------------------------------------------------------------------------
+const Navbar = () => {
+	const {round,totalRounds,wordToGuess,timeInSec,roomId} = useGameStore();
 
 	const convertTimeIntoMinSec = (time: number) => {
 		const min = Math.floor(time / 60);
@@ -71,6 +70,8 @@ const Navbar = ({ round, totalRounds, wordToGuess, timeInSec }: { round: number,
 				</div>
 			</div>
 			<div className="flex items-center space-x-4">
+				<span className="text-gray-400">Room ID : </span>
+				<span>{roomId}</span>
                 <span className="text-gray-400">Time Left : </span>
 				<span className="text-3xl font-bold text-yellow-400">
 					{convertTimeIntoMinSec(timeInSec)}

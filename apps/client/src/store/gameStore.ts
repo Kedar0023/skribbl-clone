@@ -8,13 +8,13 @@ interface GameState {
 	wordToGuess: string;
 	timeInSec: number;
 	gameState: GameStateEnum;
-	//-------- stroke action
+	//-------- ----------------------------stroke action
 	strokes: Stroke[];
 	setStrokes: (stroke: Stroke) => void;
 	addStroke: (stroke: Stroke) => void;
 	undoStroke: () => void;
 	clearCanvas: () => void;
-    //-------- Room & User State
+    //--------------------------------- Room & User State
     currentUser: User | null;
     roomId: string | null;
     users: User[];
@@ -34,7 +34,7 @@ interface GameState {
     }
 }
 
-const useGameStore = create<GameState>()((set, get) => ({
+const useGameStore = create<GameState>()((set) => ({
 	round: 1,
 	totalRounds: 3,
 	wordToGuess: "",
@@ -146,7 +146,7 @@ socket.on("correct-guess", (userId) => {
     const users = useGameStore.getState().users;
     const user = users.find(u => u.id === userId);
     if(user) {
-         useGameStore.setState((state) => ({
+        useGameStore.setState((state) => ({
             chatMessages: [
                 ...state.chatMessages,
                 { id: Math.random().toString(), sender: "System", message: `${user.name} guessed the word!`, isCorrectGuess: true }

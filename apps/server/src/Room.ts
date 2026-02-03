@@ -1,8 +1,8 @@
-
 import type { User, Stroke } from "@repo/types/socket";
 import { GameState } from "@repo/types/socket";
 import { WORDS } from "./words";
 import { Server } from "socket.io";
+//------------------------------------------------------------------------------
 
 export class Room {
     id: string;
@@ -16,8 +16,8 @@ export class Room {
     timer: ReturnType<typeof setInterval> | null = null;
     timeLeft: number = 0;
     round: number = 1;
-    totalRounds: number = 3;
-    //-----------------------------------------------------------------------
+    totalRounds: number = 2;
+    //------------------------------------------------------------------------------
 
     // Server instance to emit events directly from room
     private io: Server;
@@ -27,8 +27,16 @@ export class Room {
         this.io = io;
     }
 
+    private broadcastState() {
+        this.io.to(this.id).emit("game-state-change", this.gameState);
+        this.io.to(this.id).emit("round-sync", this.round, this.totalRounds);
+    }
+    //------------------------------------------------------------------------------
     addUser(user: User): boolean {
-        if (this.users.length >= this.maxPlayers || this.gameState !== GameState.LOBBY) {
+        if (
+            this.users.length >= this.maxPlayers ||
+            this.gameState !== GameState.LOBBY
+        ) {
             return false;
         }
         this.users.push(user);
@@ -51,17 +59,57 @@ export class Room {
     isEmpty(): boolean {
         return this.users.length === 0;
     }
+    //------------------------------------------------------------------------------
 
     startGame() {
-        if (this.users.length < 2) return; // Need at least 2 players
+        if (this.users.length < 2) return; // Need atleast II
         this.gameState = GameState.STARTING;
         this.broadcastState();
 
-        let startCount = 5;
+        let startCount = 3;
         this.startTimer(startCount, () => {
             this.startRound();
         });
     }
+    //------------------------------------------------------------------------------
+
+    // PickRandomUserToDraw() {
+    //     if (this.users.length < 1) return;
+        
+    //     const availableUsers = this.users.filter(u => u.id !== this.currentDrawerId);
+    //     const pool = availableUsers.length > 0 ? availableUsers : this.users;
+    
+    //     const randomIdx = Math.floor(Math.random() * pool.length);
+    //     this.currentDrawerId = pool[randomIdx]?.id ?? null;
+    // }
+    PickRandomUserToDraw(): void {
+        const { users, currentDrawerId } = this;
+        const count = users.length;
+    
+        if (count === 0) return;
+    
+        let idx: number;
+    
+        do {
+            idx = Math.floor(Math.random() * count);
+        } while (
+            count > 1 &&
+            users[idx]?.id === currentDrawerId
+        );
+    
+        this.currentDrawerId = users[idx]?.id ?? null;
+    }
+
+    PickRandomWords(): string[] {
+        const wordsToChooseFrom: string[] = [];
+
+        for (let i = 0; i < 3; i++) {
+            let word = WORDS[Math.floor(Math.random() * WORDS.length)];
+            if (word) wordsToChooseFrom.push(word);
+        }
+        return wordsToChooseFrom;
+    }
+    //------------------------------------------------------------------------------
 
     startRound() {
         if (this.round > this.totalRounds) {
@@ -73,25 +121,16 @@ export class Room {
         this.strokes = [];
         this.broadcastState();
 
-        // Pick random drawer
-        const drawerIndex = Math.floor(Math.random() * this.users.length);
-        const drawer = this.users[drawerIndex];
-        if (!drawer) return;
-        this.currentDrawerId = drawer.id;
+        this.PickRandomUserToDraw();
 
-        // Pick 3 random words
-        const words: string[] = [];
-        for (let i = 0; i < 3; i++) {
-            const word = WORDS[Math.floor(Math.random() * WORDS.length)];
-            if (word) words.push(word);
-        }
+        const words = this.PickRandomWords();
 
         // Notify drawer
         if (this.currentDrawerId) {
             this.io.to(this.currentDrawerId).emit("your-turn-to-choose", words);
         }
 
-        // 15 seconds to choose
+        // 15 sec to choose
         this.startTimer(15, () => {
             // Auto-select if no choice
             if (words[0]) {
@@ -99,6 +138,7 @@ export class Room {
             }
         });
     }
+    //------------------------------------------------------------------------------
 
     startDrawing(word: string) {
         this.gameState = GameState.DRAWING;
@@ -107,7 +147,7 @@ export class Room {
 
         this.io.to(this.id).emit("word-selected", word);
 
-        // 60 seconds to draw
+        // 60 sec to draw
         this.startTimer(60, () => {
             this.endRound();
         });
@@ -129,21 +169,28 @@ export class Room {
         this.broadcastState();
         this.stopTimer();
     }
+    //------------------------------------------------------------------------------
 
     handleGuess(userId: string, guess: string) {
         if (this.gameState !== GameState.DRAWING || !this.currentWord) return;
 
         if (guess.toLowerCase() === this.currentWord.toLowerCase()) {
-            const user = this.users.find(u => u.id === userId);
+            const user = this.users.find((u) => u.id === userId);
             if (user) {
                 user.score += Math.ceil(this.timeLeft * 10); // Simple scoring
                 this.io.to(this.id).emit("correct-guess", userId);
                 this.io.to(this.id).emit("room-joined", this.id, this.users); // Update scores
             }
         } else {
-            this.io.to(this.id).emit("chat-msg", `${this.users.find(u => u.id === userId)?.name}: ${guess}`);
+            this.io
+                .to(this.id)
+                .emit(
+                    "chat-msg",
+                    `${this.users.find((u) => u.id === userId)?.name}: ${guess}`,
+                );
         }
     }
+    //------------------------------------------------------------------------------
 
     private startTimer(seconds: number, callback: () => void) {
         this.stopTimer();
@@ -167,9 +214,5 @@ export class Room {
             this.timer = null;
         }
     }
-
-    private broadcastState() {
-        this.io.to(this.id).emit("game-state-change", this.gameState);
-        this.io.to(this.id).emit("round-sync", this.round, this.totalRounds);
-    }
+    //------------------------------------------------------------------------------
 }
