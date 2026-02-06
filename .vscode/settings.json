@@ -9,7 +9,7 @@
 		"**/tsconfig.json": true,
 		"**/vite.config.ts": true,
 		// "**/package.json": true,
-		"**/README.md": true,
+		// "**/README.md": true,
 		"**/index.html": true,
 		"**/.npmrc": true,
 		"**/apps/client/src/routeTree.gen.ts": true,

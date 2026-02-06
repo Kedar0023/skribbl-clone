@@ -15,7 +15,7 @@ const Canvas = () => {
     // Track rendered strokes to avoid redraw
     const renderedStrokeCount = useRef(0);
     
-    	const { strokes, actions: { drawStroke }, clearCanvas, undoStroke, isDrawer } = useGameStore();
+    	const { strokes, actions: { drawStroke, clearCanvas }, undoStroke, isDrawer } = useGameStore();
 
     // Helper to get coordinates
     const getCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {

@@ -31,6 +31,7 @@ interface GameState {
         sendChat: (msg: string) => void;
         joinQuickGame: (name: string) => void;
         drawStroke: (stroke: Stroke) => void;
+        clearCanvas: () => void;
     }
 }
 
@@ -80,6 +81,10 @@ const useGameStore = create<GameState>()((set) => ({
         },
         drawStroke: (stroke: Stroke) => {
             socket.emit("draw-stroke", stroke);
+        },
+        clearCanvas: () => {
+             set({ strokes: [] });
+             socket.emit("clear-canvas");
         }
     }
 }));
@@ -128,6 +133,10 @@ socket.on("word-selected", (word) => {
 socket.on("get-stroke",(stroke)=>{
 	useGameStore.getState().addStroke(stroke);
 })
+
+socket.on("clear-canvas", () => {
+    useGameStore.setState({ strokes: [] });
+});
 
 socket.on("chat-msg", (msgStr) => {
     // msgStr format: "Name: message"

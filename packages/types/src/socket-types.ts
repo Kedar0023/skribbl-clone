@@ -33,6 +33,7 @@ export interface ServerToClientEvents {
 	"word-selected": (word: string) => void;
 	"correct-guess": (userId: string) => void;
     "round-sync": (round: number, totalRounds: number) => void;
+	"clear-canvas": () => void;
 }
 
 export interface ClientToServerEvents {
@@ -44,7 +45,7 @@ export interface ClientToServerEvents {
 	"send-chat": (msg: string) => void;
     "join-quick-game": (username: string) => void;
 	"get-room-id" :()=>string;
-
+	"clear-canvas": () => void;
 }
 
 export interface InterServerEvents {

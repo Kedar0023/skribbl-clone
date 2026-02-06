@@ -9,6 +9,7 @@ export class Room {
     users: User[] = [];
     maxPlayers: number = 8;
     strokes: Stroke[] = [];
+    correctGuesses: string[] = [];
 
     gameState: GameState = GameState.LOBBY;
     currentDrawerId: string | null = null;
@@ -120,6 +121,7 @@ export class Room {
         this.gameState = GameState.CHOOSING;
         this.strokes = [];
         this.broadcastState();
+        this.io.to(this.id).emit("clear-canvas");
 
         this.PickRandomUserToDraw();
 
@@ -143,7 +145,9 @@ export class Room {
     startDrawing(word: string) {
         this.gameState = GameState.DRAWING;
         this.currentWord = word;
+        this.correctGuesses = [];
         this.broadcastState();
+        this.io.to(this.id).emit("clear-canvas");
 
         this.io.to(this.id).emit("word-selected", word);
 
@@ -172,14 +176,28 @@ export class Room {
     //------------------------------------------------------------------------------
 
     handleGuess(userId: string, guess: string) {
-        if (this.gameState !== GameState.DRAWING || !this.currentWord) return;
+        if (this.gameState !== GameState.DRAWING || !this.currentWord) {
+             this.io.to(this.id).emit("chat-msg", `${this.users.find((u) => u.id === userId)?.name}: ${guess}`);
+             return;
+        }
 
         if (guess.toLowerCase() === this.currentWord.toLowerCase()) {
             const user = this.users.find((u) => u.id === userId);
             if (user) {
                 user.score += Math.ceil(this.timeLeft * 10); // Simple scoring
+                
+                if (!this.correctGuesses.includes(userId)) {
+                    this.correctGuesses.push(userId);
+                }
+
                 this.io.to(this.id).emit("correct-guess", userId);
                 this.io.to(this.id).emit("room-joined", this.id, this.users); // Update scores
+
+                // Check if everyone (except drawer) guessed
+                const totalGuessers = this.users.length - 1; 
+                if (this.correctGuesses.length >= totalGuessers) {
+                    this.endRound();
+                }
             }
         } else {
             this.io

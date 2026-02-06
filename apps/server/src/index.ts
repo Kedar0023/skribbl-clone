@@ -104,6 +104,16 @@ io.on("connection", (socket) => {
 		}
 	});
 
+	socket.on("clear-canvas", () => {
+		const roomId = socket.data.roomId;
+		if (roomId) {
+			const room = roomManager.getRoom(roomId);
+			if (room && room.currentDrawerId === socket.id) {
+				socket.to(roomId).emit("clear-canvas");
+			}
+		}
+	});
+
 	socket.on("start-game", () => {
 		const roomId = socket.data.roomId;
 		if (roomId) {
