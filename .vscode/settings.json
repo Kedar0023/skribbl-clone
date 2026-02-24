@@ -1,22 +1,21 @@
 {
 	"files.exclude": {
 		"**/.turbo": true,
-		"**/node_modules": true,
+		// "**/node_modules": true,
 		"**/.git": true,
 		"**/.gitignore": true,
 		"**/.cta.json": true,
-		"**/biome.json": true,
+		"**/apps/**/biome.json": true,
 		"**/tsconfig.json": true,
 		"**/vite.config.ts": true,
-		// "**/package.json": true,
-		// "**/README.md": true,
+		"**/README.md": true,
 		"**/index.html": true,
 		"**/.npmrc": true,
 		"**/apps/client/src/routeTree.gen.ts": true,
 		"**/apps/client/src/reportWebVitals.ts": true,
 		"**/.tanstack": true,
 		"**/bun.lock": true,
-		"**/package.json": true
+		"**/apps/**/package.json": true
 	},
 
 	"files.watcherExclude": {
