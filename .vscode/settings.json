@@ -1,14 +1,14 @@
 {
 	"files.exclude": {
 		"**/.turbo": true,
-		// "**/node_modules": true,
+		"**/node_modules": true,
 		"**/.git": true,
-		"**/.gitignore": true,
+		// "**/.gitignore": true,
 		"**/.cta.json": true,
 		"**/apps/**/biome.json": true,
 		"**/tsconfig.json": true,
 		"**/vite.config.ts": true,
-		"**/README.md": true,
+		// "**/README.md": true,
 		"**/index.html": true,
 		"**/.npmrc": true,
 		"**/apps/client/src/routeTree.gen.ts": true,
