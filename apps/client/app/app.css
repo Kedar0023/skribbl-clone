@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Schoolbell&family=Gaegu:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+@import "drawably/style.css";
+@import "drawably/font.css";
+@import "tailwindcss";
+
+:root {
+  --drawably-stroke: #213d65;
+  --drawably-fill: #1e293b;
+  --drawably-paper: #ffffff;
+  --font-drawably: "Drawably Pen", "Schoolbell", "Gaegu", cursive, system-ui;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-drawably);
+  background-color: #3460c6;
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.6);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Fix color picker input appearance */
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: 2px solid #64748b;
+  border-radius: 9999px;
+}

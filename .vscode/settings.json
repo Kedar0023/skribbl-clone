@@ -11,11 +11,11 @@
 		// "**/README.md": true,
 		"**/index.html": true,
 		"**/.npmrc": true,
-		"**/apps/client/src/routeTree.gen.ts": true,
-		"**/apps/client/src/reportWebVitals.ts": true,
+		"**/apps/client_2/src/routeTree.gen.ts": true,
+		"**/apps/client_2/src/reportWebVitals.ts": true,
 		"**/.tanstack": true,
 		"**/bun.lock": true,
-		"**/apps/**/package.json": true
+		// "**/apps/**/package.json": true
 	},
 
 	"files.watcherExclude": {
