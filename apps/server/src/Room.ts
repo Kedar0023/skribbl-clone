@@ -1,36 +1,19 @@
 import type { Server } from "socket.io";
 import type { User, Stroke } from "@repo/types/socket";
 import { GameState } from "@repo/types/socket";
-import { WORDS } from "./words";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-/** How many seconds the "game starting" countdown lasts. */
-const COUNTDOWN_SECONDS = 3;
-
-/** How many seconds the drawer gets to pick a word. */
-const CHOOSE_TIME_SECONDS = 15;
-
-/** How many seconds the drawer gets to draw. */
-const DRAW_TIME_SECONDS = 60;
-
-/** How many seconds to show the round-end screen. */
-const ROUND_END_SECONDS = 5;
-
-/** How many word choices the drawer sees. */
-const WORD_CHOICES = 3;
-
-/** How often (in seconds) to reveal an extra hint letter. */
-const HINT_INTERVAL_SECONDS = 15;
-
-/** Base score multiplier per second of remaining time. */
-const SCORE_PER_SECOND = 10;
-
-// ─── Room ────────────────────────────────────────────────────────────────────
+import { GAME_CONFIG } from "./config";
+import { pickRandomWords } from "./words";
+import {
+  calculateGuesserScore,
+  calculateDrawerReward,
+  generateHint,
+  logger,
+} from "./utils";
 
 export class Room {
   readonly id: string;
-  readonly maxPlayers: number = 8;
+  readonly maxPlayers: number = GAME_CONFIG.MAX_PLAYERS;
+  readonly minPlayers: number = GAME_CONFIG.MIN_PLAYERS;
 
   // Player state
   users: User[] = [];
@@ -44,7 +27,10 @@ export class Room {
   currentDrawerId: string | null = null;
   currentWord: string | null = null;
   round: number = 1;
-  totalRounds: number = 2;
+  totalRounds: number = GAME_CONFIG.TOTAL_ROUNDS;
+
+  // Turn management (Fair drawer rotation)
+  private drawerQueue: string[] = [];
 
   // Round tracking
   private correctGuesses: Set<string> = new Set();
@@ -88,18 +74,22 @@ export class Room {
 
     const [user] = this.users.splice(index, 1);
 
-    // Clean up from correct guesses
+    // Clean up tracking sets and queue
     this.correctGuesses.delete(userId);
+    this.drawerQueue = this.drawerQueue.filter((id) => id !== userId);
 
     // Transfer host to next player if the host left
     if (this.hostId === userId) {
       this.hostId = this.users[0]?.id ?? null;
-      // TODO: emit a "host-changed" event when the client supports it
+      if (this.hostId) {
+        this.io.to(this.id).emit("host-changed", this.hostId);
+        logger.info("Room", `Room ${this.id}: New host assigned to ${this.hostId}`);
+      }
     }
 
     // Not enough players to continue → end game
     if (
-      this.users.length < 2 &&
+      this.users.length < this.minPlayers &&
       this.gameState !== GameState.LOBBY &&
       this.gameState !== GameState.GAME_END
     ) {
@@ -107,8 +97,13 @@ export class Room {
       return user;
     }
 
-    // If the drawer left, end the round immediately
+    // If current drawer left during CHOOSING or DRAWING, advance turn immediately
     if (this.currentDrawerId === userId) {
+      this.stopTimer();
+      logger.info(
+        "Room",
+        `Room ${this.id}: Drawer disconnected in state ${this.gameState}. Advancing turn.`,
+      );
       this.endRound();
     } else if (this.gameState === GameState.DRAWING) {
       // Check if all remaining guessers have already guessed correctly
@@ -126,108 +121,190 @@ export class Room {
     return this.hostId === userId;
   }
 
+  get currentHint(): string {
+    if (!this.currentWord) return "";
+    return generateHint(this.currentWord, this.revealedIndices);
+  }
+
   // ─── Game Lifecycle ──────────────────────────────────────────────────────
 
-  startGame(): void {
-    if (this.users.length < 2) return;
+  startGame(userId?: string): boolean {
+    if (userId && !this.isHost(userId)) {
+      return false;
+    }
+
+    if (this.users.length < this.minPlayers) {
+      return false;
+    }
 
     this.gameState = GameState.STARTING;
     this.round = 1;
+    this.drawerQueue = [];
     this.broadcastState();
 
-    this.startTimer(COUNTDOWN_SECONDS, () => {
-      this.startRound();
+    this.startTimer(GAME_CONFIG.COUNTDOWN_SECONDS, () => {
+      this.startNextTurn();
     });
+
+    return true;
   }
 
-  private startRound(): void {
-    // BUG-2 fix: check before starting — avoids the unnecessary 5-second
-    // round-end timer when the game is actually over.
-    if (this.round > this.totalRounds) {
-      this.endGame();
+  /**
+   * Starts the next player's drawing turn using fair round-robin queue.
+   */
+  private startNextTurn(): void {
+    // If the drawer queue is empty, repopulate for a new round
+    if (this.drawerQueue.length === 0) {
+      if (this.round > this.totalRounds) {
+        this.endGame();
+        return;
+      }
+      this.populateDrawerQueue();
+    }
+
+    // Pick next drawer from queue
+    const nextDrawerId = this.drawerQueue.shift();
+    if (!nextDrawerId || !this.users.some((u) => u.id === nextDrawerId)) {
+      // If player disconnected, recurse to get next valid drawer or end
+      if (this.drawerQueue.length > 0) {
+        this.startNextTurn();
+      } else if (this.round < this.totalRounds) {
+        this.round++;
+        this.startNextTurn();
+      } else {
+        this.endGame();
+      }
       return;
     }
 
+    this.currentDrawerId = nextDrawerId;
     this.gameState = GameState.CHOOSING;
     this.strokes = [];
     this.correctGuesses.clear();
     this.revealedIndices.clear();
     this.currentWord = null;
+
     this.broadcastState();
     this.io.to(this.id).emit("clear-canvas");
+    this.io.to(this.id).emit("current-drawer", this.currentDrawerId);
 
-    this.pickRandomDrawer();
+    const words = pickRandomWords(GAME_CONFIG.WORD_CHOICES);
 
-    const words = this.pickRandomWords(WORD_CHOICES);
-
-    // Notify the drawer — only they receive the word choices
-    if (this.currentDrawerId) {
-      this.io
-        .to(this.currentDrawerId)
-        .emit("your-turn-to-choose", words);
-      this.io.to(this.id).emit("current-drawer", this.currentDrawerId);
-    }
+    // Notify the drawer with word choices
+    this.io.to(this.currentDrawerId).emit("your-turn-to-choose", words);
 
     // Auto-select the first word if the drawer doesn't pick in time
-    this.startTimer(CHOOSE_TIME_SECONDS, () => {
+    this.startTimer(GAME_CONFIG.CHOOSE_TIME_SECONDS, () => {
       if (words[0]) {
         this.startDrawing(words[0]);
       }
     });
   }
 
+  /**
+   * Initializes the drawer queue with all currently connected player IDs.
+   */
+  private populateDrawerQueue(): void {
+    this.drawerQueue = this.users.map((u) => u.id);
+  }
+
+  selectWord(userId: string, word: string): boolean {
+    if (this.gameState !== GameState.CHOOSING || this.currentDrawerId !== userId) {
+      return false;
+    }
+    if (!word || word.trim().length === 0) {
+      return false;
+    }
+    this.startDrawing(word.trim());
+    return true;
+  }
+
   startDrawing(word: string): void {
+    this.stopTimer();
     this.gameState = GameState.DRAWING;
     this.currentWord = word;
     this.correctGuesses.clear();
     this.revealedIndices.clear();
+
     this.broadcastState();
     this.io.to(this.id).emit("clear-canvas");
 
-    // BUG-4 fix: send the full word ONLY to the drawer, send word length to
-    // guessers. The drawer's socket gets the actual word; everyone else gets
-    // an underscored hint.
+    // Full word sent ONLY to drawer
     if (this.currentDrawerId) {
       this.io.to(this.currentDrawerId).emit("word-selected", word);
     }
 
-    // Send initial blank hint to guessers
-    const blankHint = this.generateHint(word);
+    // Initial blank hint sent to everyone else
+    const blankHint = this.currentHint;
     this.io.to(this.id).emit("word-hint", blankHint);
 
-    this.startTimer(DRAW_TIME_SECONDS, () => {
+    this.startTimer(GAME_CONFIG.DRAW_TIME_SECONDS, () => {
       this.endRound();
     });
   }
 
   private endRound(): void {
+    this.stopTimer();
     this.gameState = GameState.ROUND_END;
 
-    // Reveal the word to everyone at round end
+    // Reveal word to everyone at turn/round end
     if (this.currentWord) {
       this.io.to(this.id).emit("word-selected", this.currentWord);
     }
 
     this.broadcastState();
-    this.round++;
 
-    // BUG-2 fix: if this was the last round, go directly to game-end
-    // instead of showing a pointless 5-second countdown.
+    // Check if the round cycle has completed
+    if (this.drawerQueue.length === 0) {
+      this.round++;
+    }
+
     if (this.round > this.totalRounds) {
-      this.startTimer(ROUND_END_SECONDS, () => {
+      this.startTimer(GAME_CONFIG.ROUND_END_SECONDS, () => {
         this.endGame();
       });
     } else {
-      this.startTimer(ROUND_END_SECONDS, () => {
-        this.startRound();
+      this.startTimer(GAME_CONFIG.ROUND_END_SECONDS, () => {
+        this.startNextTurn();
       });
     }
   }
 
   private endGame(): void {
-    this.gameState = GameState.GAME_END;
-    this.broadcastState();
     this.stopTimer();
+    this.gameState = GameState.GAME_END;
+    this.currentDrawerId = null;
+    this.currentWord = null;
+    this.drawerQueue = [];
+    this.broadcastState();
+  }
+
+  playAgain(userId: string): boolean {
+    if (!this.isHost(userId)) {
+      return false;
+    }
+
+    if (this.gameState !== GameState.GAME_END) {
+      return false;
+    }
+
+    // Reset scores
+    for (const user of this.users) {
+      user.score = 0;
+    }
+
+    this.round = 1;
+    this.strokes = [];
+    this.correctGuesses.clear();
+    this.revealedIndices.clear();
+    this.currentWord = null;
+    this.currentDrawerId = null;
+    this.drawerQueue = [];
+
+    this.io.to(this.id).emit("score-update", this.users);
+    this.io.to(this.id).emit("clear-canvas");
+
+    return this.startGame(userId);
   }
 
   // ─── Chat & Guessing ────────────────────────────────────────────────────
@@ -236,26 +313,33 @@ export class Room {
     const user = this.users.find((u) => u.id === userId);
     if (!user) return;
 
-    // BUG-5 fix: the drawer cannot guess their own word
+    // Drawer cannot guess their own word
     if (userId === this.currentDrawerId) return;
 
-    // If we're not in drawing state or no word is set, treat as regular chat
+    // If not drawing or no word set, broadcast regular chat
     if (this.gameState !== GameState.DRAWING || !this.currentWord) {
       this.broadcastChatMessage(user.name, guess);
       return;
     }
 
-    // BUG-7 fix: players who already guessed correctly are silenced
+    // Players who already guessed correctly are silenced for this turn
     if (this.correctGuesses.has(userId)) return;
 
-    // Check if the guess is correct
+    // Check if guess matches the word
     if (guess.toLowerCase().trim() === this.currentWord.toLowerCase()) {
-      user.score += Math.ceil(this.timeLeft * SCORE_PER_SECOND);
-
+      const points = calculateGuesserScore(this.timeLeft);
+      user.score += points;
       this.correctGuesses.add(userId);
 
+      // Award bonus reward to the drawer
+      if (this.currentDrawerId) {
+        const drawer = this.users.find((u) => u.id === this.currentDrawerId);
+        if (drawer) {
+          drawer.score += calculateDrawerReward();
+        }
+      }
+
       this.io.to(this.id).emit("correct-guess", userId);
-      // Dedicated score-update event instead of abusing "room-joined"
       this.io.to(this.id).emit("score-update", this.users);
 
       this.checkAllGuessed();
@@ -264,14 +348,11 @@ export class Room {
     }
   }
 
-  /** Broadcast a structured chat message to the room. */
   private broadcastChatMessage(sender: string, message: string): void {
-    // Still using the string format for backward compat with the client.
-    // The client splits on ": " — avoid breakage by keeping the format.
     this.io.to(this.id).emit("chat-msg", `${sender}: ${message}`);
   }
 
-  /** End the round early if all guessers have guessed correctly. */
+  /** End turn early if all guessers have successfully guessed. */
   private checkAllGuessed(): void {
     const totalGuessers = this.users.length - 1;
     if (totalGuessers > 0 && this.correctGuesses.size >= totalGuessers) {
@@ -279,49 +360,39 @@ export class Room {
     }
   }
 
-  // ─── Undo ────────────────────────────────────────────────────────────────
+  // ─── Drawing Actions ─────────────────────────────────────────────────────
 
-  /** BUG-1 fix: handle undo from the drawer and broadcast to all clients. */
-  handleUndoStroke(): void {
+  drawStroke(userId: string, stroke: Stroke): boolean {
+    if (this.gameState !== GameState.DRAWING || this.currentDrawerId !== userId) {
+      return false;
+    }
+    this.strokes.push(stroke);
+    return true;
+  }
+
+  clearCanvas(userId: string): boolean {
+    if (this.gameState !== GameState.DRAWING || this.currentDrawerId !== userId) {
+      return false;
+    }
+    this.strokes = [];
+    return true;
+  }
+
+  undoStroke(userId: string): boolean {
+    if (this.gameState !== GameState.DRAWING || this.currentDrawerId !== userId) {
+      return false;
+    }
     if (this.strokes.length > 0) {
       this.strokes.pop();
     }
-    this.io.to(this.id).emit("undo-stroke");
-  }
-
-  // ─── Stroke Storage ──────────────────────────────────────────────────────
-
-  /** Store a stroke for late-join replay. */
-  addStroke(stroke: Stroke): void {
-    this.strokes.push(stroke);
+    return true;
   }
 
   // ─── Word Hints ──────────────────────────────────────────────────────────
 
-  /**
-   * Generate a hint string for the current word.
-   * Revealed indices show their letter; everything else is "_".
-   * Spaces and hyphens are always shown.
-   */
-  private generateHint(word: string): string {
-    return word
-      .split("")
-      .map((ch, i) => {
-        if (ch === " " || ch === "-") return ch;
-        if (this.revealedIndices.has(i)) return ch;
-        return "_";
-      })
-      .join(" ");
-  }
-
-  /**
-   * Reveal one more letter in the hint and broadcast it.
-   * Called periodically by the timer.
-   */
   revealHintLetter(): void {
     if (!this.currentWord) return;
 
-    // Collect indices that haven't been revealed yet (skip spaces/hyphens)
     const hiddenIndices = this.currentWord
       .split("")
       .map((ch, i) => ({ ch, i }))
@@ -331,46 +402,17 @@ export class Room {
       )
       .map(({ i }) => i);
 
-    if (hiddenIndices.length <= 1) return; // keep at least 1 hidden
+    if (hiddenIndices.length <= 1) return; // Keep at least 1 letter hidden
 
     const randomIdx =
       hiddenIndices[Math.floor(Math.random() * hiddenIndices.length)]!;
     this.revealedIndices.add(randomIdx);
 
-    const hint = this.generateHint(this.currentWord);
+    const hint = this.currentHint;
     this.io.to(this.id).emit("word-hint", hint);
   }
 
-  // ─── Random Selection Helpers ────────────────────────────────────────────
-
-  /** Pick a random drawer, avoiding the current one when possible. */
-  private pickRandomDrawer(): void {
-    const { users, currentDrawerId } = this;
-    const count = users.length;
-
-    if (count === 0) return;
-
-    let idx: number;
-    do {
-      idx = Math.floor(Math.random() * count);
-    } while (count > 1 && users[idx]?.id === currentDrawerId);
-
-    this.currentDrawerId = users[idx]?.id ?? null;
-  }
-
-  /** Pick N unique random words from the word list. */
-  private pickRandomWords(count: number): string[] {
-    const words = new Set<string>();
-
-    while (words.size < count && words.size < WORDS.length) {
-      const word = WORDS[Math.floor(Math.random() * WORDS.length)];
-      if (word) words.add(word);
-    }
-
-    return Array.from(words);
-  }
-
-  // ─── Timer ───────────────────────────────────────────────────────────────
+  // ─── Timer & State Sync ──────────────────────────────────────────────────
 
   private broadcastState(): void {
     this.io.to(this.id).emit("game-state-change", this.gameState);
@@ -382,7 +424,6 @@ export class Room {
     this.timeLeft = seconds;
     this.io.to(this.id).emit("timer-tick", this.timeLeft);
 
-    // Track elapsed seconds for hint reveals during drawing phase
     let elapsed = 0;
 
     this.timer = setInterval(() => {
@@ -390,10 +431,10 @@ export class Room {
       elapsed++;
       this.io.to(this.id).emit("timer-tick", this.timeLeft);
 
-      // Progressively reveal hint letters during drawing
+      // Progressively reveal hints during DRAWING
       if (
         this.gameState === GameState.DRAWING &&
-        elapsed % HINT_INTERVAL_SECONDS === 0
+        elapsed % GAME_CONFIG.HINT_INTERVAL_SECONDS === 0
       ) {
         this.revealHintLetter();
       }
@@ -414,8 +455,11 @@ export class Room {
 
   // ─── Cleanup ─────────────────────────────────────────────────────────────
 
-  /** Stop all timers. Call when deleting a room. */
   destroy(): void {
     this.stopTimer();
+    this.strokes = [];
+    this.correctGuesses.clear();
+    this.revealedIndices.clear();
+    this.drawerQueue = [];
   }
 }

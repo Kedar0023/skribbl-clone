@@ -1,16 +1,8 @@
 import type { Server } from "socket.io";
 import { GameState } from "@repo/types/socket";
+import { GAME_CONFIG } from "./config";
 import { Room } from "./Room";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-/** Length of generated room IDs. */
-const ROOM_ID_LENGTH = 8;
-
-/** Maximum retries when generating a unique room ID (safety valve). */
-const MAX_ID_RETRIES = 100;
-
-// ─── RoomManager ─────────────────────────────────────────────────────────────
+import { logger } from "./utils";
 
 /**
  * Singleton registry for all active rooms.
@@ -19,7 +11,7 @@ const MAX_ID_RETRIES = 100;
  * then `RoomManager.getInstance()` everywhere else.
  */
 export class RoomManager {
-  private static instance: RoomManager;
+  private static instance: RoomManager | null = null;
   private readonly rooms: Map<string, Room> = new Map();
   private readonly io: Server;
 
@@ -31,7 +23,7 @@ export class RoomManager {
     if (!RoomManager.instance) {
       if (!io) {
         throw new Error(
-          "RoomManager needs an io instance for first initialization",
+          "RoomManager needs a Socket.IO instance for initial creation",
         );
       }
       RoomManager.instance = new RoomManager(io);
@@ -45,6 +37,7 @@ export class RoomManager {
     const roomId = this.generateUniqueRoomId();
     const room = new Room(roomId, this.io);
     this.rooms.set(roomId, room);
+    logger.info("RoomManager", `Created room ${roomId} (Total: ${this.rooms.size})`);
     return room;
   }
 
@@ -55,17 +48,19 @@ export class RoomManager {
   deleteRoom(roomId: string): void {
     const room = this.rooms.get(roomId);
     if (room) {
-      room.destroy(); // clean up timers
+      room.destroy();
       this.rooms.delete(roomId);
+      logger.info("RoomManager", `Deleted room ${roomId} (Total: ${this.rooms.size})`);
     }
   }
 
   // ─── Quick-Join ────────────────────────────────────────────────────────
 
-  /** Find the first room that is still in the lobby and has space. */
+  /**
+   * Finds the first available room that is in the LOBBY state and has player slots.
+   */
   findAvailableRoom(): Room | undefined {
     for (const room of this.rooms.values()) {
-      // BUG-fix: use enum instead of string comparison
       if (
         room.gameState === GameState.LOBBY &&
         room.users.length < room.maxPlayers
@@ -76,21 +71,14 @@ export class RoomManager {
     return undefined;
   }
 
-  // ─── Helpers ───────────────────────────────────────────────────────────
+  // ─── Room ID Generation ────────────────────────────────────────────────
 
-  /**
-   * Generate a collision-free room ID.
-   *
-   * Uses `crypto.randomUUID` for better randomness than `Math.random`,
-   * truncated to ROOM_ID_LENGTH uppercase alphanumeric characters.
-   * Retries if a collision is detected (BUG-8 fix).
-   */
   private generateUniqueRoomId(): string {
-    for (let i = 0; i < MAX_ID_RETRIES; i++) {
+    for (let i = 0; i < GAME_CONFIG.MAX_ID_RETRIES; i++) {
       const id = crypto
         .randomUUID()
         .replace(/-/g, "")
-        .substring(0, ROOM_ID_LENGTH)
+        .substring(0, GAME_CONFIG.ROOM_ID_LENGTH)
         .toUpperCase();
 
       if (!this.rooms.has(id)) {
@@ -98,13 +86,26 @@ export class RoomManager {
       }
     }
 
-    // Extremely unlikely — fall back to timestamp-based ID
-    return Date.now().toString(36).toUpperCase().substring(0, ROOM_ID_LENGTH);
+    // Safety fallback
+    return Date.now()
+      .toString(36)
+      .toUpperCase()
+      .substring(0, GAME_CONFIG.ROOM_ID_LENGTH);
   }
 
-  // ─── Stats (useful for debugging / health checks) ─────────────────────
+  // ─── Stats ─────────────────────────────────────────────────────────────
 
   get roomCount(): number {
     return this.rooms.size;
+  }
+
+  /**
+   * Cleans up all rooms and their timers. Useful for server shutdown.
+   */
+  destroyAll(): void {
+    for (const [id, room] of this.rooms.entries()) {
+      room.destroy();
+      this.rooms.delete(id);
+    }
   }
 }

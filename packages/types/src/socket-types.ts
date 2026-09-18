@@ -51,6 +51,8 @@ export interface ServerToClientEvents {
   "stroke-history": (strokes: Stroke[]) => void;
   /** Notifies clients who the current drawer is. */
   "current-drawer": (drawerId: string) => void;
+  /** Notifies clients when the host changes. */
+  "host-changed": (hostId: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -67,6 +69,7 @@ export interface ClientToServerEvents {
   "get-room-id": (callback: (roomId: string | null) => void) => void;
   "clear-canvas": () => void;
   "undo-stroke": () => void;
+  "play-again": () => void;
 }
 
 export interface InterServerEvents {

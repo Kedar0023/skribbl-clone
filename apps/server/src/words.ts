@@ -2,10 +2,10 @@
  * Word list for NotSkribbl.io
  *
  * Words are organized by category for readability and future
- * category-based selection (Feature Q7 from audit).
+ * category-based selection.
  */
 
-const ANIMALS = [
+export const ANIMALS = [
   "cat",
   "dog",
   "elephant",
@@ -48,7 +48,7 @@ const ANIMALS = [
   "fox",
 ] as const;
 
-const FOOD = [
+export const FOOD = [
   "apple",
   "banana",
   "cherry",
@@ -81,7 +81,7 @@ const FOOD = [
   "coconut",
 ] as const;
 
-const OBJECTS = [
+export const OBJECTS = [
   "guitar",
   "house",
   "igloo",
@@ -124,7 +124,7 @@ const OBJECTS = [
   "anchor",
 ] as const;
 
-const CHARACTERS = [
+export const CHARACTERS = [
   "batman",
   "superman",
   "spiderman",
@@ -147,7 +147,7 @@ const CHARACTERS = [
   "dragon",
 ] as const;
 
-const PLACES = [
+export const PLACES = [
   "beach",
   "castle",
   "desert",
@@ -170,7 +170,7 @@ const PLACES = [
   "playground",
 ] as const;
 
-const ACTIVITIES = [
+export const ACTIVITIES = [
   "bowling",
   "camping",
   "dancing",
@@ -193,7 +193,7 @@ const ACTIVITIES = [
   "yoga",
 ] as const;
 
-const NATURE = [
+export const NATURE = [
   "cloud",
   "lightning",
   "moon",
@@ -217,7 +217,7 @@ const NATURE = [
 ] as const;
 
 /** All words combined into a single flat array (~200 words). */
-export const WORDS: string[] = [
+export const WORDS: readonly string[] = [
   ...ANIMALS,
   ...FOOD,
   ...OBJECTS,
@@ -226,3 +226,20 @@ export const WORDS: string[] = [
   ...ACTIVITIES,
   ...NATURE,
 ];
+
+/**
+ * Picks N unique random words from the word pool.
+ */
+export function pickRandomWords(count: number, pool: readonly string[] = WORDS): string[] {
+  const chosen = new Set<string>();
+  const availableCount = pool.length;
+
+  while (chosen.size < count && chosen.size < availableCount) {
+    const word = pool[Math.floor(Math.random() * availableCount)];
+    if (word) {
+      chosen.add(word);
+    }
+  }
+
+  return Array.from(chosen);
+}
