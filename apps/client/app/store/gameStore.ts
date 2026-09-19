@@ -23,6 +23,8 @@ interface GameStoreState {
   timeInSec: number;
   gameState: GameStateEnum;
   currentDrawerId: string | null;
+  hostId: string | null;
+  isHost: boolean;
 
   // Strokes & Drawing
   strokes: Stroke[];
@@ -54,6 +56,8 @@ interface GameStoreState {
     drawStroke: (stroke: Stroke) => void;
     undoStroke: () => void;
     clearCanvas: () => void;
+    playAgain: () => void;
+    getRoomId: (callback: (roomId: string | null) => void) => void;
     leaveRoom: () => void;
   };
 }
@@ -68,6 +72,8 @@ const useGameStore = create<GameStoreState>()((set, get) => ({
   activeStroke: null,
   currentUser: null,
   currentDrawerId: null,
+  hostId: null,
+  isHost: false,
   roomId: null,
   users: [],
   gameState: GameStateEnum.LOBBY,
@@ -90,9 +96,12 @@ const useGameStore = create<GameStoreState>()((set, get) => ({
   actions: {
     createRoom: (name, callback) => {
       socket.emit("create-room", name, (roomId) => {
+        const socketId = socket.id || "";
         set({
           roomId,
-          currentUser: { id: socket.id || "", name, score: 0 },
+          currentUser: { id: socketId, name, score: 0 },
+          hostId: socketId,
+          isHost: true,
         });
         if (callback) callback(roomId);
       });
@@ -135,6 +144,14 @@ const useGameStore = create<GameStoreState>()((set, get) => ({
       socket.emit("clear-canvas");
     },
 
+    playAgain: () => {
+      socket.emit("play-again");
+    },
+
+    getRoomId: (callback) => {
+      socket.emit("get-room-id", callback);
+    },
+
     leaveRoom: () => {
       set({
         roomId: null,
@@ -147,6 +164,8 @@ const useGameStore = create<GameStoreState>()((set, get) => ({
         wordHint: "",
         isDrawer: false,
         currentDrawerId: null,
+        hostId: null,
+        isHost: false,
       });
     },
   },
@@ -157,17 +176,33 @@ if (typeof window !== "undefined") {
   socket.on("room-joined", (roomId, users) => {
     const currentSocketId = socket.id;
     const me = users.find((u) => u.id === currentSocketId) || null;
+    const hostId = users[0]?.id || null;
     useGameStore.setState({
       roomId,
       users,
       currentUser: me,
+      hostId,
+      isHost: currentSocketId === hostId,
+    });
+  });
+
+  socket.on("host-changed", (hostId) => {
+    useGameStore.setState({
+      hostId,
+      isHost: socket.id === hostId,
     });
   });
 
   socket.on("user-joined", (user) => {
     useGameStore.setState((state) => {
       if (state.users.some((u) => u.id === user.id)) return state;
-      return { users: [...state.users, user] };
+      const updatedUsers = [...state.users, user];
+      const hostId = state.hostId || updatedUsers[0]?.id || null;
+      return {
+        users: updatedUsers,
+        hostId,
+        isHost: socket.id === hostId,
+      };
     });
   });
 
@@ -198,7 +233,9 @@ if (typeof window !== "undefined") {
     if (
       gameState === GameStateEnum.CHOOSING ||
       gameState === GameStateEnum.ROUND_END ||
-      gameState === GameStateEnum.GAME_END
+      gameState === GameStateEnum.GAME_END ||
+      gameState === GameStateEnum.LOBBY ||
+      gameState === GameStateEnum.STARTING
     ) {
       if (gameState !== GameStateEnum.CHOOSING) {
         useGameStore.setState({ isDrawer: false });

@@ -24,10 +24,12 @@ export default function Game() {
     currentUser,
     currentDrawerId,
     gameState,
+    isHost,
     isDrawer,
+    timeInSec,
     availableWords,
     wordToGuess,
-    actions: { selectWord, startGame, leaveRoom },
+    actions: { selectWord, startGame },
   } = useGameStore();
 
   // If user accesses /game directly without a room, return to lobby
@@ -42,7 +44,7 @@ export default function Game() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-white overflow-hidden select-none">
+    <div className="flex flex-col h-screen w-screen bg-bg text-primary overflow-hidden select-none">
       {/* Top Navbar */}
       <Navbar />
 
@@ -52,28 +54,59 @@ export default function Game() {
         <Players players={users} currentDrawerId={currentDrawerId} />
 
         {/* Center: Canvas area with game state overlays */}
-        <div className="flex-1 relative flex flex-col bg-slate-200 overflow-hidden">
+        <div className="flex-1 relative flex flex-col bg-bg overflow-hidden">
           {/* LOBBY Overlay */}
           {gameState === GameState.LOBBY && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-              <DrawablyCard className="bg-slate-900 border-2 border-slate-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-4">
-                <DrawablyBadge variant="outline" className="text-sm font-bold text-amber-300">
-                  LOBBY
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
+              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-4 text-primary">
+                <DrawablyBadge
+                  variant="outline"
+                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
+                >
+                  GAME LOBBY
                 </DrawablyBadge>
-                <h2 className="text-3xl font-extrabold text-white">
+                <h2 className="text-3xl font-black text-primary">
                   Waiting for players...
                 </h2>
-                <p className="text-slate-400 text-sm">
-                  {users.length} player{users.length === 1 ? "" : "s"} in room. Ready to start?
+                <p className="text-primary/80 text-sm font-semibold">
+                  {users.length} player{users.length === 1 ? "" : "s"} in room.
+                  {users.length < 2 && " (Need at least 2 players to start)"}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
-                  <DrawablyButton
-                    onClick={startGame}
-                    variant="solid"
-                    className="px-8 py-3 text-lg font-bold"
-                  >
-                    ▶ Start Game
-                  </DrawablyButton>
+                  {isHost ? (
+                    <DrawablyButton
+                      onClick={startGame}
+                      variant="solid"
+                      disabled={users.length < 2}
+                      className="px-8 py-3 text-lg font-black bg-accent text-primary border-2 border-primary hover:brightness-105 disabled:opacity-50"
+                    >
+                      ▶ Start Game (Host)
+                    </DrawablyButton>
+                  ) : (
+                    <div className="text-sm font-bold text-primary/80 italic">
+                      Waiting for the host to start the match...
+                    </div>
+                  )}
+                </div>
+              </DrawablyCard>
+            </div>
+          )}
+
+          {/* STARTING Countdown Overlay */}
+          {gameState === GameState.STARTING && (
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
+              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center flex flex-col items-center gap-3 text-primary">
+                <DrawablyBadge
+                  variant="outline"
+                  className="text-xs font-black bg-secondary text-primary px-3 py-1 border border-primary"
+                >
+                  GET READY!
+                </DrawablyBadge>
+                <h2 className="text-2xl font-black text-primary">
+                  Game Starting In
+                </h2>
+                <div className="text-6xl font-black text-accent font-mono animate-bounce">
+                  {timeInSec}
                 </div>
               </DrawablyCard>
             </div>
@@ -81,12 +114,15 @@ export default function Game() {
 
           {/* CHOOSING Overlay (Drawer view) */}
           {gameState === GameState.CHOOSING && isDrawer && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-slate-900 border-2 border-slate-700 p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center flex flex-col items-center gap-5">
-                <DrawablyBadge variant="outline" className="text-sm font-bold text-amber-300">
-                  YOUR TURN
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/85 backdrop-blur-sm p-4 animate-in fade-in">
+              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center flex flex-col items-center gap-5 text-primary">
+                <DrawablyBadge
+                  variant="outline"
+                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
+                >
+                  YOUR TURN TO DRAW!
                 </DrawablyBadge>
-                <h2 className="text-3xl font-extrabold text-white">
+                <h2 className="text-3xl font-black text-primary">
                   Choose a Word to Draw!
                 </h2>
                 <div className="flex flex-wrap items-center justify-center gap-3 w-full mt-2">
@@ -95,11 +131,14 @@ export default function Game() {
                       key={word}
                       onClick={() => selectWord(word)}
                       variant="solid"
-                      className="px-6 py-3 text-lg font-bold capitalize"
+                      className="px-6 py-3 text-lg font-black capitalize bg-secondary text-primary border-2 border-primary hover:brightness-105"
                     >
                       {word}
                     </DrawablyButton>
                   ))}
+                </div>
+                <div className="text-xs font-bold text-primary/70">
+                  Pick before timer runs out: {timeInSec}s
                 </div>
               </DrawablyCard>
             </div>
@@ -107,12 +146,12 @@ export default function Game() {
 
           {/* CHOOSING Overlay (Guesser view) */}
           {gameState === GameState.CHOOSING && !isDrawer && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-slate-900 border-2 border-slate-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3">
-                <h2 className="text-2xl font-bold text-slate-200">
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
+              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3 text-primary">
+                <h2 className="text-2xl font-black text-primary">
                   ✏️ The drawer is picking a word...
                 </h2>
-                <p className="text-slate-400 text-sm">
+                <p className="text-primary/80 text-sm font-semibold">
                   Get ready to guess quickly for maximum points!
                 </p>
               </DrawablyCard>
@@ -121,19 +160,22 @@ export default function Game() {
 
           {/* ROUND_END Overlay */}
           {gameState === GameState.ROUND_END && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-slate-900 border-2 border-slate-700 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3">
-                <DrawablyBadge variant="outline" className="text-sm font-bold text-amber-300">
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/85 backdrop-blur-sm p-4 animate-in fade-in">
+              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3 text-primary">
+                <DrawablyBadge
+                  variant="outline"
+                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
+                >
                   ROUND OVER
                 </DrawablyBadge>
-                <h2 className="text-2xl font-bold text-slate-300">
+                <h2 className="text-2xl font-bold text-primary/80">
                   The word was:
                 </h2>
-                <div className="text-4xl font-extrabold text-amber-300 capitalize tracking-wider font-mono">
+                <div className="text-4xl font-black text-primary capitalize tracking-wider font-mono">
                   {wordToGuess || "..."}
                 </div>
-                <p className="text-slate-400 text-sm mt-2">
-                  Preparing the next round...
+                <p className="text-primary/70 text-sm mt-2 font-semibold">
+                  Preparing the next turn...
                 </p>
               </DrawablyCard>
             </div>
@@ -152,3 +194,4 @@ export default function Game() {
     </div>
   );
 }
+

@@ -13,7 +13,11 @@ import {
 export function meta() {
   return [
     { title: "Skribbl Clone - Hand-Drawn Multiplayer Drawing Game" },
-    { name: "description", content: "Play Skribbl clone with hand-drawn Drawably UI and real-time multiplayer!" },
+    {
+      name: "description",
+      content:
+        "Play Skribbl clone with hand-drawn Drawably UI and real-time multiplayer!",
+    },
   ];
 }
 
@@ -25,7 +29,6 @@ export default function Home() {
 
   const { roomId, actions } = useGameStore();
 
-  // Watch for roomId to navigate to the game room
   useEffect(() => {
     if (roomId) {
       navigate("/game");
@@ -37,6 +40,7 @@ export default function Home() {
       alert("Please enter your nickname!");
       return;
     }
+
     actions.joinQuickGame(playerName.trim());
   };
 
@@ -45,6 +49,7 @@ export default function Home() {
       alert("Please enter your nickname!");
       return;
     }
+
     actions.createRoom(playerName.trim(), () => {
       navigate("/game");
     });
@@ -55,125 +60,244 @@ export default function Home() {
       alert("Please enter your nickname!");
       return;
     }
+
     setShowJoinInput(true);
   };
 
   const submitJoinCode = () => {
     const code = joinCode.trim();
+
     if (!code) {
       alert("Please enter a room code!");
       return;
     }
+
     actions.joinRoom(code, playerName.trim());
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 select-none relative overflow-hidden">
+    <main className="min-h-screen w-full overflow-hidden bg-[#fffaf0] text-[#302b3d] relative">
+      {/* Playful background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#ffd6e7] blur-2xl opacity-80" />
+        <div className="absolute top-24 right-[-90px] h-80 w-80 rounded-full bg-[#c9f7e5] blur-2xl opacity-80" />
+        <div className="absolute bottom-[-140px] left-[15%] h-96 w-96 rounded-full bg-[#d9d2ff] blur-3xl opacity-60" />
 
-      {/* Header / Title */}
-      <div className="text-center mb-8 z-10">
-        <div className="inline-block mb-3">
-          <DrawablyBadge variant="outline" className="text-xs sm:text-sm font-bold text-amber-300 px-3 py-1">
-            ✨ Freehand Multiplayer Drawing Game
-          </DrawablyBadge>
+        {/* doodle dots */}
+        <div className="absolute top-[16%] left-[8%] text-3xl rotate-12 opacity-60">
+          • • •
         </div>
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white drop-shadow-md">
-          <DrawablyUnderline>Skribbl</DrawablyUnderline>{" "}
-          <DrawablyHighlight>Draw</DrawablyHighlight>
-        </h1>
-        <p className="text-slate-400 text-sm sm:text-base mt-2">
-          Guess words, doodle with friends, climb the leaderboard!
-        </p>
+        <div className="absolute top-[24%] right-[10%] text-4xl rotate-[-15deg] opacity-50">
+          ✦
+        </div>
+        <div className="absolute bottom-[18%] left-[9%] text-3xl rotate-12 opacity-50">
+          ~
+        </div>
+        <div className="absolute bottom-[12%] right-[12%] text-4xl rotate-[-12deg] opacity-50">
+          ✎
+        </div>
+
+        <svg
+          className="absolute left-[5%] top-[42%] w-20 opacity-40"
+          viewBox="0 0 100 50"
+          fill="none"
+        >
+          <path
+            d="M5 35C22 8 38 45 54 20C65 4 77 24 95 8"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+        </svg>
+
+        <svg
+          className="absolute right-[5%] bottom-[28%] w-24 opacity-40"
+          viewBox="0 0 100 50"
+          fill="none"
+        >
+          <path
+            d="M5 8C25 35 38 5 55 30C68 48 78 23 95 40"
+            stroke="currentColor"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
 
-      {/* Main Interaction Card */}
-      <DrawablyCard className=" backdrop-blur-md  p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md flex flex-col gap-6 z-10">
-        {/* Name Input & Play Button */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-wider font-bold text-slate-400">
-            Player Nickname
-          </label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <DrawablyInput
-                type="text"
-                placeholder="Enter your name..."
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                maxLength={18}
-                className="w-full text-base font-semibold text-slate-900 placeholder:text-slate-400"
-              />
-            </div>
-            <DrawablyButton
-              onClick={handlePlayClick}
-              variant="solid"
-              className="px-5 py-2 font-bold text-base"
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-10">
+        {/* Hero */}
+        <header className="text-center mb-8 max-w-2xl">
+          <div className="mb-5 flex justify-center">
+            <DrawablyBadge
+              variant="outline"
+              stroke="#6256d9"
+              fill="#fff"
+              className="rounded-full bg-[#fff] px-4 py-2 text-xs sm:text-sm font-black text-[#6256d9] shadow-[3px_3px_0_#6256d9] rotate-[-2deg]"
             >
-              Play
-            </DrawablyButton>
+              🎨 DRAW • GUESS • LAUGH
+            </DrawablyBadge>
           </div>
-        </div>
 
-        {/* Join by Code Form (if opened) */}
-        {showJoinInput && (
-          <div className="flex flex-col gap-2 p-3 bg-slate-800/80 rounded-2xl border border-slate-700 animate-in fade-in">
-            <label className="text-xs uppercase tracking-wider font-bold text-amber-300">
-              Enter Room Code
-            </label>
-            <div className="flex items-center gap-2">
+          <div className="relative inline-block">
+            <div className="absolute -right-5 -top-6 text-2xl rotate-12">
+              ✨
+            </div>
+
+            <h1 className="text-6xl sm:text-8xl leading-[0.9] font-black tracking-[-0.06em] text-[#302b3d] silkscreen-regular">
+              <DrawablyUnderline>Skribbl</DrawablyUnderline>
+              <br />
+              <span className="inline-block rotate-[-2deg]">
+                <DrawablyHighlight>Doodle</DrawablyHighlight>
+              </span>
+            </h1>
+
+            <div className="absolute -left-7 bottom-1 text-2xl rotate-[-20deg]">
+              🖍️
+            </div>
+          </div>
+
+          <p className="mt-6 mx-auto max-w-md text-sm sm:text-base font-bold leading-relaxed text-[#6c6678]">
+            Grab a pencil, join your friends, and see who can turn terrible
+            drawings into brilliant guesses.
+          </p>
+        </header>
+
+        {/* Main card */}
+        <DrawablyCard stroke="#302b3d" fill="#fffaf0"
+        className="w-full max-w-lg bg-white/90 p-5 sm:p-7 shadow-[0_20px_60px_rgba(48,43,61,0.12)] backdrop-blur-md">
+          {/* Nickname */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <label className="text-xs font-black uppercase tracking-[0.15em] text-[#6256d9]">
+                Your nickname
+              </label>
+
+              <span className="text-xs font-bold text-[#aaa4b2]">
+                {playerName.length}/18
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <DrawablyInput
                   type="text"
-                  placeholder="e.g. room-1234"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  className="w-full text-sm font-mono text-slate-900 placeholder:text-slate-400"
+                  stroke="#302b3d"
+                  fill="#f7f5ff"
+                  placeholder="What should we call you?"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  maxLength={18}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handlePlayClick();
+                    }
+                  }}
+                  className="w-full rounded-2xl bg-[#f7f5ff] px-4 py-3.5 text-base font-bold text-[#302b3d] placeholder:text-[#aaa4b2] shadow-inner focus:bg-white"
                 />
               </div>
-              <DrawablyButton
-                onClick={submitJoinCode}
-                variant="solid"
-                className="px-4 py-1.5 font-bold text-sm"
-              >
-                Join
-              </DrawablyButton>
+
+                  <DrawablyButton
+                    stroke="#121212"
+                    fill="#6256d9"
+                    onClick={handlePlayClick}
+                    variant="solid"
+                    className="rounded-2xl bg-[#6256d9] !text-white px-7 py-3.5 text-base font-black shadow-[0_5px_0_#443ba9] transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
+                  >
+                    Let's Play!
+                  </DrawablyButton>
             </div>
           </div>
-        )}
 
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-slate-700" />
-          <span className="text-xs uppercase font-bold text-slate-500">OR</span>
-          <div className="flex-1 h-px bg-slate-700" />
-        </div>
+          {/* Join code */}
+          {showJoinInput && (
+            <div className="mt-5 rounded-2xl bg-[#fff7d6] p-4 animate-in fade-in slide-in-from-top-2">
+              <div className="mb-2 flex items-center justify-between">
+                <label className="text-xs font-black uppercase tracking-[0.15em] text-[#8c6d00]">
+                  Room code
+                </label>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3">
-          <DrawablyButton
-            onClick={handleCreateRoomClick}
-            variant="outline"
-            className="w-full py-2.5 font-bold text-base text-slate-200"
-          >
-            ➕ Create Private Room
-          </DrawablyButton>
+                <button
+                  type="button"
+                  onClick={() => setShowJoinInput(false)}
+                  className="text-xs font-black text-[#8c6d00] hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
 
-          {!showJoinInput && (
-            <DrawablyButton
-              onClick={handleJoinViaCodeClick}
-              variant="outline"
-              className="w-full py-2.5 font-bold text-base text-slate-300"
-            >
-              🔑 Join via Room Code
-            </DrawablyButton>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <DrawablyInput
+                    type="text"
+                    placeholder="e.g. room-1234"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        submitJoinCode();
+                      }
+                    }}
+                    className="w-full rounded-xl bg-white px-4 py-3 font-mono font-bold text-[#302b3d] placeholder:text-[#aaa4b2]"
+                  />
+                </div>
+
+                <DrawablyButton
+                  onClick={submitJoinCode}
+                  variant="solid"
+                  className="rounded-xl bg-[#f6c945] px-5 py-3 font-black text-[#302b3d] shadow-[0_4px_0_#c79c18] hover:brightness-105 active:translate-y-1 active:shadow-none"
+                >
+                  Join
+                </DrawablyButton>
+              </div>
+            </div>
           )}
-        </div>
-      </DrawablyCard>
 
-      {/* Footer */}
-      <footer className="mt-8 text-center text-xs text-slate-500 z-10">
-        <p>Built with React Router, Drawably UI, and Socket.IO</p>
-      </footer>
-    </div>
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-[#e9e5ef]" />
+            <span className="rounded-full bg-[#f4f1f8] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[#aaa4b2]">
+              or
+            </span>
+            <div className="h-px flex-1 bg-[#e9e5ef]" />
+          </div>
+
+          {/* Secondary actions */}
+          <div className="space-y-3">
+            <DrawablyButton
+              onClick={handleCreateRoomClick}
+              variant="solid"
+              className="w-full rounded-2xl bg-[#ff7fa8] py-3.5 text-base font-black text-[#302b3d] shadow-[0_5px_0_#d9557e] transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
+            >
+              <span className="mr-2">✨</span>
+              Create a Private Room
+            </DrawablyButton>
+
+            {!showJoinInput && (
+              <DrawablyButton
+                onClick={handleJoinViaCodeClick}
+                variant="outline"
+                className="w-full rounded-2xl bg-[#f1edff] py-3.5 text-base font-black text-[#6256d9] transition-all hover:-translate-y-0.5 hover:bg-[#e9e4ff]"
+              >
+                <span className="mr-2">🔑</span>
+                Join with Room Code
+              </DrawablyButton>
+            )}
+          </div>
+        </DrawablyCard>
+
+        {/* Tiny feature row */}
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-bold text-[#8c8695]">
+          <span>👥 Multiplayer</span>
+          <span>•</span>
+          <span>🎨 Freehand drawing</span>
+          <span>•</span>
+          <span>🏆 Leaderboards</span>
+        </div>
+
+        <footer className="mt-6 text-center text-[11px] font-semibold text-[#aaa4b2]">
+          Built with React Router, Drawably UI & Socket.IO
+        </footer>
+      </div>
+    </main>
   );
 }
