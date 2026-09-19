@@ -1,193 +1,129 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { GameState } from "@repo/types/socket";
 import useGameStore from "../store/gameStore";
 import Navbar from "../components/Navbar";
 import Players from "../components/Players";
 import ChatBox from "../components/ChatBox";
 import Canvas from "../components/Canvas";
 import Leaderboard from "../components/Leaderboard";
-import { GameState } from "@repo/types/socket";
-import { DrawablyButton, DrawablyCard, DrawablyBadge } from "drawably/react";
-
+import { PaperButton } from "../components/Button";
 export function meta() {
-  return [
-    { title: "Playing Skribbl Game" },
-    { name: "description", content: "Skribbl game room" },
-  ];
+    return [{ title: "Playing Skribbl Doodle" }];
 }
-
-export default function Game() {
-  const navigate = useNavigate();
-  const {
-    roomId,
-    users,
-    currentUser,
-    currentDrawerId,
-    gameState,
-    isHost,
-    isDrawer,
-    timeInSec,
-    availableWords,
-    wordToGuess,
-    actions: { selectWord, startGame },
-  } = useGameStore();
-
-  // If user accesses /game directly without a room, return to lobby
-  useEffect(() => {
-    if (!roomId) {
-      navigate("/");
-    }
-  }, [roomId, navigate]);
-
-  if (!roomId) {
-    return null;
-  }
-
-  return (
-    <div className="skribble-page flex flex-col h-screen w-screen bg-paper text-ink overflow-hidden select-none">
-      {/* Top Navbar */}
-      <Navbar />
-
-      {/* Main Game Workspace */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left: Players list */}
-        <Players players={users} currentDrawerId={currentDrawerId} />
-
-        {/* Center: Canvas area with game state overlays */}
-        <div className="flex-1 relative flex flex-col bg-paper overflow-hidden">
-          {/* LOBBY Overlay */}
-          {gameState === GameState.LOBBY && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in overflow-hidden">
-              <DrawablyCard className="bg-bg p-8 shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-4">
-                  GAME LOBBY
-                <h2 className="text-3xl font-black text-primary">
-                  Waiting for players...
-                </h2>
-                <p className="text-primary/80 text-sm font-semibold">
-                  {users.length} player{users.length === 1 ? "" : "s"} in room.
-                  {users.length < 2 && " (Need at least 2 players to start)"}
-                </p>
-                <div className="flex items-center gap-3 mt-2">
-                  {isHost ? (
-                    <DrawablyButton
-                    className="px-8 py-3 text-lg  text-white! "
-                      onClick={startGame}
-                      stroke="#242424"
-                      fill="#d9557e"
-                      variant="solid"
-                      disabled={users.length < 2}
-                    >
-                      Start Game (Host)
-                    </DrawablyButton>
-                  ) : (
-                    <div className="text-sm font-bold text-primary/80 italic">
-                      Waiting for the host to start the match...
-                    </div>
-                  )}
-                </div>
-              </DrawablyCard>
-            </div>
-          )}
-
-          {/* STARTING Countdown Overlay */}
-          {gameState === GameState.STARTING && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center flex flex-col items-center gap-3 text-primary">
-                <DrawablyBadge
-                  variant="outline"
-                  className="text-xs font-black bg-secondary text-primary px-3 py-1 border border-primary"
-                >
-                  GET READY!
-                </DrawablyBadge>
-                <h2 className="text-2xl font-black text-primary">
-                  Game Starting In
-                </h2>
-                <div className="text-6xl font-black text-accent font-mono animate-bounce">
-                  {timeInSec}
-                </div>
-              </DrawablyCard>
-            </div>
-          )}
-
-          {/* CHOOSING Overlay (Drawer view) */}
-          {gameState === GameState.CHOOSING && isDrawer && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/85 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center flex flex-col items-center gap-5 text-primary">
-                <DrawablyBadge
-                  variant="outline"
-                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
-                >
-                  YOUR TURN TO DRAW!
-                </DrawablyBadge>
-                <h2 className="text-3xl font-black text-primary">
-                  Choose a Word to Draw!
-                </h2>
-                <div className="flex flex-wrap items-center justify-center gap-3 w-full mt-2">
-                  {availableWords.map((word) => (
-                    <DrawablyButton
-                      key={word}
-                      onClick={() => selectWord(word)}
-                      variant="solid"
-                      className="px-6 py-3 text-lg font-black capitalize bg-secondary text-primary border-2 border-primary hover:brightness-105"
-                    >
-                      {word}
-                    </DrawablyButton>
-                  ))}
-                </div>
-                <div className="text-xs font-bold text-primary/70">
-                  Pick before timer runs out: {timeInSec}s
-                </div>
-              </DrawablyCard>
-            </div>
-          )}
-
-          {/* CHOOSING Overlay (Guesser view) */}
-          {gameState === GameState.CHOOSING && !isDrawer && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3 text-primary">
-                <h2 className="text-2xl font-black text-primary">
-                  ✏️ The drawer is picking a word...
-                </h2>
-                <p className="text-primary/80 text-sm font-semibold">
-                  Get ready to guess quickly for maximum points!
-                </p>
-              </DrawablyCard>
-            </div>
-          )}
-
-          {/* ROUND_END Overlay */}
-          {gameState === GameState.ROUND_END && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/85 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-3 text-primary">
-                <DrawablyBadge
-                  variant="outline"
-                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
-                >
-                  ROUND OVER
-                </DrawablyBadge>
-                <h2 className="text-2xl font-bold text-primary/80">
-                  The word was:
-                </h2>
-                <div className="text-4xl font-black text-primary capitalize tracking-wider font-mono">
-                  {wordToGuess || "..."}
-                </div>
-                <p className="text-primary/70 text-sm mt-2 font-semibold">
-                  Preparing the next turn...
-                </p>
-              </DrawablyCard>
-            </div>
-          )}
-
-          {/* Freehand SVG Canvas */}
-          <Canvas />
+function Overlay({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-paper-black/70 p-4">
+            <section className="paper-surface paper-enter flex w-full max-w-md flex-col items-center gap-4 p-7 text-center">
+                {children}
+            </section>
         </div>
+    );
+}
+export default function Game() {
+    const navigate = useNavigate();
+    const {
+        roomId,
+        users,
+        currentDrawerId,
+        gameState,
+        isHost,
+        isDrawer,
+        timeInSec,
+        availableWords,
+        wordToGuess,
+        actions: { selectWord, startGame },
+    } = useGameStore();
 
-        {/* Right: ChatBox */}
-        <ChatBox />
-      </div>
-
-      {/* GAME_END: Leaderboard Modal */}
-      {gameState === GameState.GAME_END && <Leaderboard />}
-    </div>
-  );
+    useEffect(() => {
+        if (!roomId) navigate("/");
+    }, [roomId, navigate]);
+    
+    if (!roomId) return null;
+    return (
+        <div className="paper-page flex h-screen w-screen flex-col overflow-hidden text-paper-black">
+            <Navbar />
+            <div className="relative flex flex-1 overflow-hidden">
+                <Players players={users} currentDrawerId={currentDrawerId} />
+                <main className="relative flex min-w-0 flex-1 overflow-hidden bg-paper-grey50">
+                    <Canvas />
+                    {gameState === GameState.LOBBY && (
+                        <Overlay>
+                            <span className="rounded-full border-2 border-paper-black bg-paper-lilac px-4 py-1 font-hand text-xl">
+                                Game lobby
+                            </span>
+                            <h2 className="font-hand text-4xl">Waiting for players…</h2>
+                            <p className="font-body font-bold text-paper-grey">
+                                {users.length} player{users.length === 1 ? "" : "s"} in the
+                                room. {users.length < 2 && "Invite one more to start."}
+                            </p>
+                            {isHost ? (
+                                <PaperButton disabled={users.length < 2} onClick={startGame}>
+                                    Start game
+                                </PaperButton>
+                            ) : (
+                                <p className="font-body text-sm font-bold">
+                                    The host will start the game.
+                                </p>
+                            )}
+                        </Overlay>
+                    )}
+                    {gameState === GameState.STARTING && (
+                        <Overlay>
+                            <span className="rounded-full border-2 border-paper-black bg-paper-blue px-4 py-1 font-hand text-xl">
+                                Get ready!
+                            </span>
+                            <p className="font-hand text-4xl">Game starts in</p>
+                            <strong className="font-hand text-7xl text-paper-pink">
+                                {timeInSec}
+                            </strong>
+                        </Overlay>
+                    )}
+                    {gameState === GameState.CHOOSING && isDrawer && (
+                        <Overlay>
+                            <span className="rounded-full border-2 border-paper-black bg-paper-pink px-4 py-1 font-hand text-xl">
+                                Your turn to draw
+                            </span>
+                            <h2 className="font-hand text-4xl">Choose a word</h2>
+                            <div className="flex flex-wrap justify-center gap-3">
+                                {availableWords.map((word) => (
+                                    <PaperButton
+                                        key={word}
+                                        variant="blue"
+                                        onClick={() => selectWord(word)}
+                                    >
+                                        {word}
+                                    </PaperButton>
+                                ))}
+                            </div>
+                            <p className="font-body text-sm font-bold">
+                                Pick within {timeInSec}s
+                            </p>
+                        </Overlay>
+                    )}
+                    {gameState === GameState.CHOOSING && !isDrawer && (
+                        <Overlay>
+                            <h2 className="font-hand text-4xl">The artist is choosing…</h2>
+                            <p className="font-body font-bold text-paper-grey">
+                                Get ready to guess fast.
+                            </p>
+                        </Overlay>
+                    )}
+                    {gameState === GameState.ROUND_END && (
+                        <Overlay>
+                            <span className="rounded-full border-2 border-paper-black bg-paper-lilac px-4 py-1 font-hand text-xl">
+                                Round over
+                            </span>
+                            <p className="font-body font-bold">The word was</p>
+                            <strong className="font-hand text-5xl capitalize">
+                                {wordToGuess || "…"}
+                            </strong>
+                        </Overlay>
+                    )}
+                </main>
+                <ChatBox />
+            </div>
+            {gameState === GameState.GAME_END && <Leaderboard />}
+        </div>
+    );
 }

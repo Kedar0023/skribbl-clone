@@ -9,7 +9,7 @@
 		"**/tsconfig.json": true,
 		"**/vite.config.ts": true,
 		// "**/README.md": true,
-		"**/index.html": true,
+		// "**/index.html": true,
 		"**/.npmrc": true,
 		"**/apps/client_2/src/routeTree.gen.ts": true,
 		"**/apps/client_2/src/reportWebVitals.ts": true,

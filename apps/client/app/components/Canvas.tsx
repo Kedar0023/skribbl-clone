@@ -2,7 +2,7 @@ import { useState, useRef, useMemo, useCallback } from "react";
 import useGameStore from "../store/gameStore";
 import { strokeToSvgPath } from "../lib/freehand";
 import type { Stroke } from "@repo/types/socket";
-import { DrawablyButton } from "drawably/react";
+import { PaperButton } from "./Button";
 
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 800;
@@ -135,13 +135,13 @@ export default function Canvas() {
   }, [isDrawing, activePoints, lineWidth]);
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center bg-paper select-none p-2 sm:p-4 overflow-hidden">
+    <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-paper-grey50 p-2 select-none sm:p-4">
       {/* Canvas Box */}
       <div className="relative w-full h-full max-w-full max-h-full flex items-center justify-center">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-          className={`w-full h-full max-h-[85vh] bg-white rounded-3xl shadow-[0_14px_35px_rgba(48,43,61,.14)] border-2 border-ink/20 touch-none ${
+          className={`h-full w-full max-h-[85vh] rounded-paper-lg border-2 border-paper-black bg-white shadow-paper touch-none ${
             isDrawer ? "cursor-crosshair" : "cursor-default"
           }`}
           onPointerDown={handlePointerDown}
@@ -170,38 +170,26 @@ export default function Canvas() {
         </svg>
       </div>
 
-      {/* Floating Drawer Toolbar with Drawably Controls */}
+      {/* Floating paper toolbar for the active drawer */}
       {isDrawer && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-ink text-paper px-4 py-2.5 rounded-3xl shadow-2xl border-2 border-ink flex flex-wrap items-center justify-center gap-3 z-30 max-w-[95vw] skribble-enter">
+        <div className="absolute bottom-4 left-1/2 z-30 flex max-w-[95vw] -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-paper border-2 border-paper-black bg-white px-4 py-2.5 shadow-paper paper-enter">
           {/* Tool Modes */}
-          <div className="flex items-center gap-1.5 border-r-2 border-primary/80 pr-3">
-            <DrawablyButton
-              variant={tool === "pen" ? "solid" : "outline"}
-              className={`text-xs sm:text-sm px-3 py-1 font-bold transition-all ${
-                tool === "pen"
-                  ? "bg-accent text-primary border-2 border-bg"
-                  : "bg-transparent text-bg border-secondary"
-              }`}
+          <div className="flex items-center gap-1.5 border-r-2 border-paper-black pr-3">
+            <PaperButton variant={tool === "pen" ? "secondary" : "ghost"} className="px-3 py-1 text-base"
               onClick={() => setTool("pen")}
             >
               ✏️ Pen
-            </DrawablyButton>
-            <DrawablyButton
-              variant={tool === "eraser" ? "solid" : "outline"}
-              className={`text-xs sm:text-sm px-3 py-1 font-bold transition-all ${
-                tool === "eraser"
-                  ? "bg-accent text-primary border-2 border-bg"
-                  : "bg-transparent text-bg border-secondary"
-              }`}
+            </PaperButton>
+            <PaperButton variant={tool === "eraser" ? "secondary" : "ghost"} className="px-3 py-1 text-base"
               onClick={() => setTool("eraser")}
             >
               🧹 Eraser
-            </DrawablyButton>
+            </PaperButton>
           </div>
 
           {/* Color Palette */}
           {tool === "pen" && (
-            <div className="flex items-center gap-1.5 border-r-2 border-primary/80 pr-3">
+            <div className="flex items-center gap-1.5 border-r-2 border-paper-black pr-3">
               <div className="grid grid-flow-col grid-rows-2 gap-1.5">
                 {PALETTE.map((c) => (
                   <button
@@ -214,8 +202,8 @@ export default function Canvas() {
                     style={{ backgroundColor: c }}
                     className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-transform cursor-pointer ${
                       color === c && tool === "pen"
-                        ? "scale-125 border-bg ring-2 ring-accent shadow-md"
-                        : "border-primary/80 hover:scale-110"
+                        ? "scale-125 border-paper-black ring-2 ring-paper-pink shadow-paper-sm"
+                        : "border-paper-black hover:scale-110"
                     }`}
                     aria-label={`Color ${c}`}
                   />
@@ -235,7 +223,7 @@ export default function Canvas() {
           )}
 
           {/* Brush Sizes */}
-          <div className="flex items-center gap-1.5 border-r-2 border-primary/80 pr-3">
+          <div className="flex items-center gap-1.5 border-r-2 border-paper-black pr-3">
             {BRUSH_SIZES.map((b) => (
               <button
                 key={b.label}
@@ -243,8 +231,8 @@ export default function Canvas() {
                 onClick={() => setLineWidth(b.size)}
                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center font-black text-xs transition-colors cursor-pointer ${
                   lineWidth === b.size
-                    ? "bg-secondary text-primary shadow-inner border border-bg"
-                    : "bg-primary/80 text-bg hover:bg-primary/60"
+                  ? "bg-paper-lilac text-paper-black shadow-paper-sm border-2 border-paper-black"
+                    : "bg-paper-grey50 text-paper-black border-2 border-paper-black hover:bg-paper-blue"
                 }`}
               >
                 {b.label}
@@ -254,22 +242,17 @@ export default function Canvas() {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <DrawablyButton
-              variant="outline"
-              className="text-xs sm:text-sm px-3 py-1 font-bold bg-secondary text-primary border-none hover:brightness-105"
+            <PaperButton variant="blue" className="px-3 py-1 text-base"
               onClick={undoStroke}
             >
               ↩ Undo
-            </DrawablyButton>
+            </PaperButton>
 
-            <DrawablyButton
-              variant="outline"
-              tone="danger"
-              className="text-xs sm:text-sm px-3 py-1 font-bold bg-accent text-primary border-none hover:brightness-105"
+            <PaperButton className="px-3 py-1 text-base"
               onClick={clearCanvas}
             >
               🗑 Clear
-            </DrawablyButton>
+            </PaperButton>
           </div>
         </div>
       )}

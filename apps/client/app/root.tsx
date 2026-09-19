@@ -9,9 +9,9 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { DrawablyCard, DrawablyUnderline } from "drawably/react";
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", type: "image/x-icon", href: "/favicon.ico?v=paper-20260919" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -20,15 +20,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Kablammo&display=swap",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Schoolbell&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Patrick+Hand&display=swap",
   },
 ];
 
@@ -71,15 +63,15 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="skribble-page flex min-h-screen items-center justify-center bg-paper p-4 text-ink">
-      <DrawablyCard stroke="#302b3d" fill="#fffaf0" className="skribble-panel max-w-lg bg-white/85 p-7 text-center">
-      <h1 className="text-4xl font-black"><DrawablyUnderline stroke="#d9557e">{message}</DrawablyUnderline></h1>
-      <p className="mt-3 font-bold text-muted">{details}</p>
+    <main className="paper-page flex min-h-screen items-center justify-center p-4 text-paper-black">
+      <section className="paper-surface max-w-lg p-7 text-center">
+      <h1 className="font-hand text-5xl">{message}</h1>
+      <p className="mt-3 font-body font-bold text-paper-grey">{details}</p>
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>
         </pre>
-      )}</DrawablyCard>
+      )}</section>
     </main>
   );
 }

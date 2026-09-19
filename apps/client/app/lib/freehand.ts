@@ -5,7 +5,10 @@ const average = (a: number[], b: number[]) => [
   (a[1] + b[1]) / 2,
 ];
 
-export function getSvgPathFromStroke(strokePoints: number[][], closed = true): string {
+export function getSvgPathFromStroke(
+  strokePoints: number[][],
+  closed = true,
+): string {
   const len = strokePoints.length;
   if (len < 4) return "";
 
@@ -35,7 +38,7 @@ export function strokeToSvgPath(
     thinning?: number;
     smoothing?: number;
     streamline?: number;
-  }
+  },
 ): string {
   if (!points || points.length === 0) return "";
   if (points.length === 1) {

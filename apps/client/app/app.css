@@ -1,128 +1,105 @@
-@import url('https://fonts.googleapis.com/css2?family=Schoolbell&family=Gaegu:wght@400;700&family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Kablammo&family=Silkscreen:wght@400;700&display=swap');
-@import "drawably/style.css";
-@import "drawably/font.css";
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Patrick+Hand&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #302b3d;
-  --color-paper: #fffaf0;
-  --color-lilac: #6256d9;
-  --color-lilac-dark: #443ba9;
-  --color-rose: #d9557e;
-  --color-mint: #c9f7e5;
-  --color-sun: #f6c945;
-  --color-muted: #6c6678;
-  --color-line: #e9e5ef;
-  /* Legacy names keep the in-game UI on the same palette. */
-  --color-primary: #302b3d;
-  --color-bg: #fffaf0;
-  --color-secondary: #c9f7e5;
-  --color-accent: #d9557e;
-  --color-surface: #ffffff;
+  --color-paper-white: #ffffff;
+  --color-paper-black: #232323;
+  --color-paper-lilac: #dcb0f2;
+  --color-paper-pink: #fe88b1;
+  --color-paper-blue: #9eb9f3;
+  --color-paper-grey: #b3b3b3;
+  --color-paper-grey50: #f5f5f5;
+  --color-paper-grey10: #fafafa;
+  --font-hand: "Patrick Hand", cursive;
+  --font-body: "Nunito", sans-serif;
+  --shadow-paper: 3px 3px 0 #232323;
+  --shadow-paper-sm: 2px 2px 0 #232323;
+  --shadow-paper-lift: 5px 6px 0 #232323;
+  --radius-paper: 18px;
+  --radius-paper-lg: 28px;
 }
-
-:root {
-  --drawably-stroke: #302b3d;
-  --drawably-fill: #fffaf0;
-  --drawably-paper: #fffaf0;
-}
-
-
-.kablammo {
-  font-family: "Kablammo", system-ui;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings:
-    "MORF" 0;
-}
-
-
-.home-page,
-.home-page .drawably-host {
-  font-family: "Schoolbell", cursive;
-}
-
-.home-page .kablammo,
-.home-page .kablammo .drawably-host {
-  font-family: "Kablammo", system-ui, sans-serif;
-  font-optical-sizing: auto;
-  font-variation-settings: "MORF" 0;
-}
-
-.skribble-page,
-.skribble-page .drawably-host {
-  font-family: "Schoolbell", cursive;
-}
-
-.skribble-panel {
-  box-shadow: 0 16px 45px rgba(48, 43, 61, 0.12);
-}
-
-.skribble-enter {
-  animation: skribble-enter 420ms cubic-bezier(.2, .8, .2, 1) both;
-}
-
-@keyframes skribble-enter {
-  from { opacity: 0; transform: translateY(12px) rotate(-0.6deg); }
-  to { opacity: 1; transform: translateY(0) rotate(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .skribble-enter { animation: none; }
-}
-
-/* Drawably's default `:has(:focus-visible)` selector also focuses ancestor
-   hosts such as the card. Keep the sketch focus treatment on the control
-   that actually owns focus. */
-.home-page .drawably-host:has(:focus-visible) .drawably-focus {
-  visibility: hidden;
-}
-
-.home-page .drawably-host:focus-visible > .drawably-svg .drawably-focus,
-.home-page .drawably-inputbox:has(> input:focus-visible) > .drawably-svg .drawably-focus {
-  visibility: visible;
-}
-
-.drawably-input-focus:focus-within input {
-  background-color: #fff;
-}
-
 
 html,
 body {
   margin: 0;
-  padding: 0;
-  font-family: var(--font-drawably);
-  background-color: #fffaf0;
-  color: #302b3d;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-width: 320px;
+  font-family: var(--font-body);
+  background: #f5f5f5;
+  color: #232323;
 }
-
-/* Custom scrollbars */
+button,
+input {
+  font: inherit;
+}
+.paper-page {
+  background-color: #f5f5f5;
+  background-image: radial-gradient(circle, #b3b3b3 1px, transparent 1.1px);
+  background-size: 16px 16px;
+}
+.paper-surface {
+  border: 2px solid #232323;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 3px 3px 0 #232323;
+}
+.paper-button {
+  border: 2px solid #232323;
+  border-radius: 18px;
+  box-shadow: 3px 3px 0 #232323;
+  transition: all 150ms ease-out;
+}
+.paper-button:hover:not(:disabled) {
+  box-shadow: 5px 6px 0 #232323;
+  transform: translate(-2px, -2px);
+}
+.paper-button:active:not(:disabled) {
+  box-shadow: none;
+  transform: translate(3px, 3px);
+}
+.paper-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.paper-input {
+  border: 2px solid #232323;
+  border-radius: 18px;
+  box-shadow: 2px 2px 0 #232323;
+  outline: none;
+  transition: all 150ms ease-out;
+}
+.paper-input:focus {
+  box-shadow: 3px 3px 0 #232323;
+  transform: translate(-1px, -1px);
+}
+.paper-enter {
+  animation: paper-enter 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes paper-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(48, 43, 61, 0.08);
-  border-radius: 4px;
+  width: 7px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(98, 86, 217, 0.35);
-  border-radius: 4px;
+  background: #b3b3b3;
+  border: 2px solid #232323;
+  border-radius: 99px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(98, 86, 217, 0.6);
-}
-
-/* Fix color picker input appearance */
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-input[type="color"]::-webkit-color-swatch {
-  border: 2px solid #302b3d;
-  border-radius: 9999px;
+@media (prefers-reduced-motion: reduce) {
+  .paper-enter {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
 }
