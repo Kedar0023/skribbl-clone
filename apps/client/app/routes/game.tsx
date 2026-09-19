@@ -44,7 +44,7 @@ export default function Game() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-bg text-primary overflow-hidden select-none">
+    <div className="skribble-page flex flex-col h-screen w-screen bg-paper text-ink overflow-hidden select-none">
       {/* Top Navbar */}
       <Navbar />
 
@@ -54,17 +54,12 @@ export default function Game() {
         <Players players={users} currentDrawerId={currentDrawerId} />
 
         {/* Center: Canvas area with game state overlays */}
-        <div className="flex-1 relative flex flex-col bg-bg overflow-hidden">
+        <div className="flex-1 relative flex flex-col bg-paper overflow-hidden">
           {/* LOBBY Overlay */}
           {gameState === GameState.LOBBY && (
-            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in">
-              <DrawablyCard className="bg-bg border-4 border-primary p-8 rounded-3xl shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-4 text-primary">
-                <DrawablyBadge
-                  variant="outline"
-                  className="text-xs font-black bg-accent text-primary px-3 py-1 border border-primary"
-                >
+            <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-primary/80 backdrop-blur-sm p-4 animate-in fade-in overflow-hidden">
+              <DrawablyCard className="bg-bg p-8 shadow-2xl max-w-md w-full text-center flex flex-col items-center gap-4">
                   GAME LOBBY
-                </DrawablyBadge>
                 <h2 className="text-3xl font-black text-primary">
                   Waiting for players...
                 </h2>
@@ -75,12 +70,14 @@ export default function Game() {
                 <div className="flex items-center gap-3 mt-2">
                   {isHost ? (
                     <DrawablyButton
+                    className="px-8 py-3 text-lg  text-white! "
                       onClick={startGame}
+                      stroke="#242424"
+                      fill="#d9557e"
                       variant="solid"
                       disabled={users.length < 2}
-                      className="px-8 py-3 text-lg font-black bg-accent text-primary border-2 border-primary hover:brightness-105 disabled:opacity-50"
                     >
-                      ▶ Start Game (Host)
+                      Start Game (Host)
                     </DrawablyButton>
                   ) : (
                     <div className="text-sm font-bold text-primary/80 italic">
@@ -194,4 +191,3 @@ export default function Game() {
     </div>
   );
 }
-

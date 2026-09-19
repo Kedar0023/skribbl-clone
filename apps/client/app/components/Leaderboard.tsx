@@ -18,8 +18,8 @@ export default function Leaderboard() {
   };
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-primary/90 backdrop-blur-md p-4 animate-in fade-in select-none">
-      <DrawablyCard className="bg-bg border-4 border-primary p-6 sm:p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center text-primary">
+    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-ink/80 backdrop-blur-md p-4 select-none">
+      <DrawablyCard stroke="#302b3d" fill="#fffaf0" className="skribble-enter bg-paper p-6 sm:p-8 shadow-2xl max-w-lg w-full text-center text-ink">
         <div className="inline-block mb-2">
           <DrawablyBadge
             variant="outline"
@@ -85,8 +85,9 @@ export default function Leaderboard() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           {isHost ? (
             <DrawablyButton
+              fill="#d9557e"
               variant="solid"
-              className="px-6 py-2.5 font-black text-base bg-accent text-primary border-2 border-primary hover:brightness-105"
+              className="px-6 py-2.5 font-black"
               onClick={handlePlayAgain}
             >
               🔄 Play Again (Host)
@@ -109,4 +110,3 @@ export default function Leaderboard() {
     </div>
   );
 }
-

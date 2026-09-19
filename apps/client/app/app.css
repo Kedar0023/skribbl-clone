@@ -4,31 +4,89 @@
 @import "drawably/font.css";
 @import "tailwindcss";
 
-/* @theme {
-  --color-primary: #425B9A;
-  --color-secondary: #76C0EC;
-  --color-bg: #425B9A;
-  --color-accent: #FF95A5;
-  --font-drawably: "Drawably Pen", "Schoolbell", "Gaegu", cursive, system-ui;
-} */
-/* 
-:root {
-  --drawably-stroke: #425B9A;
-  --drawably-fill: #FFF6DC;
-  --drawably-paper: #FFF6DC;
-  --font-drawably: "Drawably Pen", "Schoolbell", "Gaegu", cursive, system-ui;
-} */
-
-.silkscreen-regular {
-  font-family: "Silkscreen", sans-serif;
-  font-weight: 400;
-  font-style: normal;
+@theme {
+  --color-ink: #302b3d;
+  --color-paper: #fffaf0;
+  --color-lilac: #6256d9;
+  --color-lilac-dark: #443ba9;
+  --color-rose: #d9557e;
+  --color-mint: #c9f7e5;
+  --color-sun: #f6c945;
+  --color-muted: #6c6678;
+  --color-line: #e9e5ef;
+  /* Legacy names keep the in-game UI on the same palette. */
+  --color-primary: #302b3d;
+  --color-bg: #fffaf0;
+  --color-secondary: #c9f7e5;
+  --color-accent: #d9557e;
+  --color-surface: #ffffff;
 }
 
-.silkscreen-bold {
-  font-family: "Silkscreen", sans-serif;
-  font-weight: 700;
+:root {
+  --drawably-stroke: #302b3d;
+  --drawably-fill: #fffaf0;
+  --drawably-paper: #fffaf0;
+}
+
+
+.kablammo {
+  font-family: "Kablammo", system-ui;
+  font-optical-sizing: auto;
+  font-weight: 400;
   font-style: normal;
+  font-variation-settings:
+    "MORF" 0;
+}
+
+
+.home-page,
+.home-page .drawably-host {
+  font-family: "Schoolbell", cursive;
+}
+
+.home-page .kablammo,
+.home-page .kablammo .drawably-host {
+  font-family: "Kablammo", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "MORF" 0;
+}
+
+.skribble-page,
+.skribble-page .drawably-host {
+  font-family: "Schoolbell", cursive;
+}
+
+.skribble-panel {
+  box-shadow: 0 16px 45px rgba(48, 43, 61, 0.12);
+}
+
+.skribble-enter {
+  animation: skribble-enter 420ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+@keyframes skribble-enter {
+  from { opacity: 0; transform: translateY(12px) rotate(-0.6deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skribble-enter { animation: none; }
+}
+
+/* Drawably's default `:has(:focus-visible)` selector also focuses ancestor
+   hosts such as the card. Keep the sketch focus treatment on the control
+   that actually owns focus. */
+.home-page .drawably-host:has(:focus-visible) .drawably-focus {
+  visibility: hidden;
+}
+
+.home-page .drawably-host:focus-visible > .drawably-svg .drawably-focus,
+.home-page .drawably-inputbox:has(> input:focus-visible) > .drawably-svg .drawably-focus {
+  visibility: visible;
+}
+
+.drawably-input-focus:focus-within input {
+  background-color: #fff;
 }
 
 
@@ -37,8 +95,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-drawably);
-  background-color: var(--color-bg);
-  color: var(--color-primary);
+  background-color: #fffaf0;
+  color: #302b3d;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -49,15 +107,15 @@ body {
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(66, 91, 154, 0.1);
+  background: rgba(48, 43, 61, 0.08);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(66, 91, 154, 0.35);
+  background: rgba(98, 86, 217, 0.35);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(66, 91, 154, 0.6);
+  background: rgba(98, 86, 217, 0.6);
 }
 
 /* Fix color picker input appearance */
@@ -65,6 +123,6 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 input[type="color"]::-webkit-color-swatch {
-  border: 2px solid #425B9A;
+  border: 2px solid #302b3d;
   border-radius: 9999px;
 }

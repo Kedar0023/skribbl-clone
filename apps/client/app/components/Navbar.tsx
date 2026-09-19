@@ -1,81 +1,60 @@
 import { useState } from "react";
 import useGameStore from "../store/gameStore";
-import { DrawablyBadge, DrawablyButton } from "drawably/react";
+import { DrawablyButton } from "drawably/react";
 
 export default function Navbar() {
-  const { round, totalRounds, wordToGuess, wordHint, timeInSec, roomId, isDrawer } =
-    useGameStore();
+  const {
+    round,
+    totalRounds,
+    wordToGuess,
+    wordHint,
+    timeInSec,
+    roomId,
+    isDrawer,
+  } = useGameStore();
   const [copied, setCopied] = useState(false);
-
-  const formatTime = (time: number) => {
-    const min = Math.floor(time / 60);
-    const sec = time % 60;
-    return `${min}:${sec < 10 ? "0" : ""}${sec}`;
-  };
-
-  const copyRoomId = () => {
+  const displayWord = isDrawer
+    ? wordToGuess
+    : wordHint ||
+      (wordToGuess ? wordToGuess.replace(/[a-zA-Z0-9]/g, "_ ") : "");
+  const copyRoomId = async () => {
     if (roomId) {
-      navigator.clipboard.writeText(roomId);
+      await navigator.clipboard.writeText(roomId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  // Determine what word representation to display
-  const displayWord = isDrawer
-    ? wordToGuess
-    : wordHint || (wordToGuess ? wordToGuess.replace(/[a-zA-Z0-9]/g, "_ ") : "");
-
+  const time = `${Math.floor(timeInSec / 60)}:${String(timeInSec % 60).padStart(2, "0")}`;
   return (
-    <header className="relative flex items-center justify-between px-4 py-3 bg-primary border-b-4 border-primary text-bg shadow-lg select-none z-20">
-      {/* Round Info */}
-      <div className="flex items-center gap-2">
-        <DrawablyBadge
-          variant="outline"
-          className="text-sm sm:text-base font-bold bg-bg text-primary border-primary shadow-sm px-3 py-1"
-        >
-          Round {round} / {totalRounds}
-        </DrawablyBadge>
-      </div>
-
-      {/* Word / Word Hint Display */}
-      <div className="flex flex-col items-center justify-center">
-        <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-secondary">
-          {isDrawer ? "✏️ You are drawing" : "🔍 Guess the word"}
-        </span>
-        <div className="text-xl sm:text-3xl font-extrabold tracking-widest text-bg font-mono mt-0.5 drop-shadow-sm">
+    <header className="relative z-20 flex items-center justify-between gap-3 border-b border-line bg-paper/95 px-3 py-3 text-ink">
+      <p className="text-xl font-black  tracking-[.16em] sm:text-2xl">
+        Round {round}/{totalRounds}
+      </p>
+      <div className="min-w-0 flex-1 text-center">
+        <p className="text-[10px] font-black uppercase tracking-[.16em] text-lilac">
+          {isDrawer ? "Your masterpiece" : "Guess the doodle"}
+        </p>
+        <div className="truncate text-lg font-black tracking-[.16em] text-ink sm:text-2xl">
           {displayWord || "..."}
         </div>
       </div>
-
-      {/* Room ID & Timer */}
-      <div className="flex items-center gap-3 sm:gap-4">
-        {roomId && (
-          <div className="hidden md:flex items-center gap-1.5 bg-primary/80 px-3 py-1 rounded-xl border-2 border-primary text-xs">
-            <span className="text-secondary font-semibold">Room:</span>
-            <span className="font-mono font-bold text-bg">{roomId}</span>
-            <DrawablyButton
-              variant="outline"
-              className="text-[10px] px-2 py-0.5 ml-1 bg-secondary text-primary border-none font-bold hover:brightness-105"
-              onClick={copyRoomId}
-            >
-              {copied ? "✓ Copied" : "Copy"}
-            </DrawablyButton>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2 bg-primary/80 px-3.5 py-1.5 rounded-2xl border-2 border-secondary/50 shadow-inner">
-          <span className="text-xs text-secondary font-bold uppercase hidden sm:inline">Time:</span>
-          <span
-            className={`text-xl sm:text-2xl font-mono font-black ${
-              timeInSec <= 10 ? "text-accent animate-pulse" : "text-bg"
-            }`}
-          >
-            {formatTime(timeInSec)}
-          </span>
+      <div className="flex items-center gap-2">
+        <div
+          className={`rounded-xl px-3 py-1.5 font-mono text-lg font-black ${timeInSec <= 10 ? "bg-[#fff0d6] text-rose animate-pulse" : "bg-[#f1edff] text-lilac"}`}
+        >
+          {time}
         </div>
+        {roomId && (
+          <DrawablyButton
+            variant="outline"
+            stroke="#302b3d"
+            onClick={copyRoomId}
+            className="hidden bg-white px-3 py-1.5 text-xs font-black text-ink md:inline-flex stroke-1"
+          >
+            {copied ? "Copied!" : `Code: ${roomId}`}
+          </DrawablyButton>
+        )}
       </div>
     </header>
   );
 }
-

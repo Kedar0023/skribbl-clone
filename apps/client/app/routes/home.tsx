@@ -9,6 +9,7 @@ import {
   DrawablyHighlight,
   DrawablyBadge,
 } from "drawably/react";
+import Doodles from "./test";
 
 export function meta() {
   return [
@@ -76,84 +77,28 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full overflow-hidden bg-[#fffaf0] text-[#302b3d] relative">
+    <main className="home-page min-h-screen w-full overflow-hidden bg-[#fffaf0] text-[#302b3d] relative">
       {/* Playful background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-[#ffd6e7] blur-2xl opacity-80" />
-        <div className="absolute top-24 right-[-90px] h-80 w-80 rounded-full bg-[#c9f7e5] blur-2xl opacity-80" />
-        <div className="absolute bottom-[-140px] left-[15%] h-96 w-96 rounded-full bg-[#d9d2ff] blur-3xl opacity-60" />
 
-        {/* doodle dots */}
-        <div className="absolute top-[16%] left-[8%] text-3xl rotate-12 opacity-60">
-          • • •
-        </div>
-        <div className="absolute top-[24%] right-[10%] text-4xl rotate-[-15deg] opacity-50">
-          ✦
-        </div>
-        <div className="absolute bottom-[18%] left-[9%] text-3xl rotate-12 opacity-50">
-          ~
-        </div>
-        <div className="absolute bottom-[12%] right-[12%] text-4xl rotate-[-12deg] opacity-50">
-          ✎
-        </div>
-
-        <svg
-          className="absolute left-[5%] top-[42%] w-20 opacity-40"
-          viewBox="0 0 100 50"
-          fill="none"
-        >
-          <path
-            d="M5 35C22 8 38 45 54 20C65 4 77 24 95 8"
-            stroke="currentColor"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-        </svg>
-
-        <svg
-          className="absolute right-[5%] bottom-[28%] w-24 opacity-40"
-          viewBox="0 0 100 50"
-          fill="none"
-        >
-          <path
-            d="M5 8C25 35 38 5 55 30C68 48 78 23 95 40"
-            stroke="currentColor"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
+      <Doodles/>
 
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-10">
         {/* Hero */}
         <header className="text-center mb-8 max-w-2xl">
-          <div className="mb-5 flex justify-center">
-            <DrawablyBadge
-              variant="outline"
-              stroke="#6256d9"
-              fill="#fff"
-              className="rounded-full bg-[#fff] px-4 py-2 text-xs sm:text-sm font-black text-[#6256d9] shadow-[3px_3px_0_#6256d9] rotate-[-2deg]"
-            >
-              🎨 DRAW • GUESS • LAUGH
-            </DrawablyBadge>
-          </div>
 
           <div className="relative inline-block">
             <div className="absolute -right-5 -top-6 text-2xl rotate-12">
               ✨
             </div>
 
-            <h1 className="text-6xl sm:text-8xl leading-[0.9] font-black tracking-[-0.06em] text-[#302b3d] silkscreen-regular">
-              <DrawablyUnderline>Skribbl</DrawablyUnderline>
-              <br />
-              <span className="inline-block rotate-[-2deg]">
-                <DrawablyHighlight>Doodle</DrawablyHighlight>
+            <h1 className="text-6xl sm:text-8xl leading-[0.9] font-black tracking-[0.06em] text-[#1b1a1f] kablammo">
+              <DrawablyUnderline>SkRibbl</DrawablyUnderline>
+              <span className="inline-block -rotate-2">
+                <DrawablyHighlight fill="#d9557e">Doodle</DrawablyHighlight>
               </span>
             </h1>
 
-            <div className="absolute -left-7 bottom-1 text-2xl rotate-[-20deg]">
-              🖍️
-            </div>
+
           </div>
 
           <p className="mt-6 mx-auto max-w-md text-sm sm:text-base font-bold leading-relaxed text-[#6c6678]">
@@ -192,7 +137,7 @@ export default function Home() {
                       handlePlayClick();
                     }
                   }}
-                  className="w-full rounded-2xl bg-[#f7f5ff] px-4 py-3.5 text-base font-bold text-[#302b3d] placeholder:text-[#aaa4b2] shadow-inner focus:bg-white"
+                  className="drawably-input-focus w-full rounded-2xl bg-[#f7f5ff] px-4 py-3.5 text-base font-bold text-[#302b3d] placeholder:text-[#aaa4b2] shadow-inner"
                 />
               </div>
 
@@ -201,7 +146,7 @@ export default function Home() {
                     fill="#6256d9"
                     onClick={handlePlayClick}
                     variant="solid"
-                    className="rounded-2xl bg-[#6256d9] !text-white px-7 py-3.5 text-base font-black shadow-[0_5px_0_#443ba9] transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
+                    className="rounded-2xl bg-[#6256d9] text-white! px-7 py-3.5 text-base font-black shadow-[0_5px_0_#443ba9] transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
                   >
                     Let's Play!
                   </DrawablyButton>
@@ -237,7 +182,7 @@ export default function Home() {
                         submitJoinCode();
                       }
                     }}
-                    className="w-full rounded-xl bg-white px-4 py-3 font-mono font-bold text-[#302b3d] placeholder:text-[#aaa4b2]"
+                    className="drawably-input-focus w-full rounded-xl bg-white px-4 py-3 font-mono font-bold text-[#302b3d] placeholder:text-[#aaa4b2]"
                   />
                 </div>
 
@@ -264,11 +209,12 @@ export default function Home() {
           {/* Secondary actions */}
           <div className="space-y-3">
             <DrawablyButton
+              stroke="#d9557e"
+              fill = "#d9557e"
               onClick={handleCreateRoomClick}
               variant="solid"
-              className="w-full rounded-2xl bg-[#ff7fa8] py-3.5 text-base font-black text-[#302b3d] shadow-[0_5px_0_#d9557e] transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
+              className="w-full py-3.5 text-base text-black  transition-all hover:-translate-y-0.5 hover:brightness-105 active:translate-y-1 active:shadow-none"
             >
-              <span className="mr-2">✨</span>
               Create a Private Room
             </DrawablyButton>
 
@@ -278,7 +224,7 @@ export default function Home() {
                 variant="outline"
                 className="w-full rounded-2xl bg-[#f1edff] py-3.5 text-base font-black text-[#6256d9] transition-all hover:-translate-y-0.5 hover:bg-[#e9e4ff]"
               >
-                <span className="mr-2">🔑</span>
+                <span className="mr-2"></span>
                 Join with Room Code
               </DrawablyButton>
             )}
@@ -287,15 +233,15 @@ export default function Home() {
 
         {/* Tiny feature row */}
         <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-bold text-[#8c8695]">
-          <span>👥 Multiplayer</span>
+          <span> Multiplayer</span>
           <span>•</span>
-          <span>🎨 Freehand drawing</span>
+          <span> Freehand drawing</span>
           <span>•</span>
-          <span>🏆 Leaderboards</span>
+          <span> Leaderboards</span>
         </div>
 
         <footer className="mt-6 text-center text-[11px] font-semibold text-[#aaa4b2]">
-          Built with React Router, Drawably UI & Socket.IO
+          Made with ❤️ by Kedar0023
         </footer>
       </div>
     </main>

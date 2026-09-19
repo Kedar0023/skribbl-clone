@@ -11,10 +11,10 @@ const CANVAS_HEIGHT = 800;
 const PALETTE = [
   "#000000", // Black
   "#ffffff", // White
-  "#425B9A", // Brand Navy
-  "#76C0EC", // Brand Sky
-  "#FF95A5", // Brand Pink
-  "#FFF6DC", // Brand Cream
+  "#6256d9", // Doodle violet
+  "#67c9b1", // Mint
+  "#d9557e", // Rose
+  "#f6c945", // Sun
   "#ef4444", // Red
   "#f97316", // Orange
   "#eab308", // Yellow
@@ -33,7 +33,7 @@ const BRUSH_SIZES = [
 export default function Canvas() {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [color, setColor] = useState("#425B9A");
+  const [color, setColor] = useState("#6256d9");
   const [lineWidth, setLineWidth] = useState(8);
   const [tool, setTool] = useState<"pen" | "eraser">("pen");
   const currentPoints = useRef<{ x: number; y: number }[]>([]);
@@ -135,13 +135,13 @@ export default function Canvas() {
   }, [isDrawing, activePoints, lineWidth]);
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center bg-bg select-none p-2 sm:p-4 overflow-hidden">
+    <div className="relative w-full h-full flex flex-col items-center justify-center bg-paper select-none p-2 sm:p-4 overflow-hidden">
       {/* Canvas Box */}
       <div className="relative w-full h-full max-w-full max-h-full flex items-center justify-center">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-          className={`w-full h-full max-h-[85vh] bg-white rounded-3xl shadow-xl border-4 border-primary touch-none ${
+          className={`w-full h-full max-h-[85vh] bg-white rounded-3xl shadow-[0_14px_35px_rgba(48,43,61,.14)] border-2 border-ink/20 touch-none ${
             isDrawer ? "cursor-crosshair" : "cursor-default"
           }`}
           onPointerDown={handlePointerDown}
@@ -172,7 +172,7 @@ export default function Canvas() {
 
       {/* Floating Drawer Toolbar with Drawably Controls */}
       {isDrawer && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-bg px-4 py-2.5 rounded-3xl shadow-2xl border-3 border-primary/90 flex flex-wrap items-center justify-center gap-3 z-30 max-w-[95vw]">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-ink text-paper px-4 py-2.5 rounded-3xl shadow-2xl border-2 border-ink flex flex-wrap items-center justify-center gap-3 z-30 max-w-[95vw] skribble-enter">
           {/* Tool Modes */}
           <div className="flex items-center gap-1.5 border-r-2 border-primary/80 pr-3">
             <DrawablyButton
@@ -276,4 +276,3 @@ export default function Canvas() {
     </div>
   );
 }
-
